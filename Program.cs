@@ -1,7 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using quiz_project.Entities;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+var connection = builder.Configuration.GetConnectionString("DefaultConnection") ??
+    throw new InvalidOperationException("Connection string 'DefaultConnection' was not found");
+builder.Services.AddDbContext<QuizDb>(o => o.UseSqlite(connection));
 
 var app = builder.Build();
 
