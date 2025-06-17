@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 namespace quiz_project.Entities
 {
-    public class Quiz
+    public class Answer
     {
-        public int QuizId { get; set; }
-        public required string Title { get; set; }
+        public int AnswerId { get; set; }
         public required string Description { get; set; }
-        public List<Question>? Questions { get; set; }
-
+        public required int QuestionId { get; set; }
+        public required Question Question { get; set; }
     }
 }

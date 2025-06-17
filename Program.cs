@@ -1,5 +1,8 @@
+using System.Net.WebSockets;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using quiz_project.Entities;
+using quiz_project.Migrations.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,5 +33,11 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+using (var scope = app.Services.CreateAsyncScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<QuizDb>();
+    DbSeeder.Initialize(context);
+}
 
 app.Run();
