@@ -11,6 +11,6 @@ namespace quiz_project.Entities
         public required string Description { get; set; }
         public List<Answer>? Answers { get; set; }
         public required int QuizId { get; set; }
-        public required Quiz Quiz { get; set; }
+        public Quiz Quiz { get; set; }
     }
 }

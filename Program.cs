@@ -1,7 +1,10 @@
 using System.Net.WebSockets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using quiz_project.Controllers;
 using quiz_project.Entities;
+using quiz_project.Entities.Repositories;
+using quiz_project.Interfaces;
 using quiz_project.Migrations.Database;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +15,7 @@ builder.Services.AddControllersWithViews();
 var connection = builder.Configuration.GetConnectionString("DefaultConnection") ??
     throw new InvalidOperationException("Connection string 'DefaultConnection' was not found");
 builder.Services.AddDbContext<QuizDb>(o => o.UseSqlite(connection));
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 
 var app = builder.Build();
 
@@ -32,7 +36,12 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id:int?}");
+
+app.MapControllerRoute(
+    name: "fallback",
+    pattern: "{*Home}",
+    defaults: new { controller = "Home", action = "Index" });
 
 using (var scope = app.Services.CreateAsyncScope())
 {

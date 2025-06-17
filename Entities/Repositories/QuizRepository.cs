@@ -2,26 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using quiz_project.Entities;
+using Microsoft.EntityFrameworkCore;
 using quiz_project.Interfaces;
+using quiz_project.Migrations.Database;
 
-namespace quiz_project.Models.Repositories
+namespace quiz_project.Entities.Repositories
 {
-    public class QuizRepository : IQuizRepository
+    public class QuizRepository(QuizDb context) : IQuizRepository
     {
         public void DeleteQuiz(Quiz quiz)
         {
             throw new NotImplementedException();
         }
 
-        public Quiz GetQuizById(int quizId)
+        public async Task<Quiz> GetQuizById(int quizId)
         {
-            throw new NotImplementedException();
+            var quiz = await context.Quizzes.FirstOrDefaultAsync(q => q.QuizId == quizId);
+            return quiz;
         }
 
-        public IEnumerable<Quiz> GetQuizes()
+        public async Task<IEnumerable<Quiz>> GetQuizesAsync()
         {
-            throw new NotImplementedException();
+            var quizes = await context.Quizzes.ToListAsync();
+            return quizes;
         }
 
         public void InsertQuiz(Quiz quiz)

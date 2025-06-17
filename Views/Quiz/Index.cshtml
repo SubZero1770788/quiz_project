@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "Quiz site";
+}
+@model List<quiz_project.Models.QuizModel>
+
+<h1>@ViewData["Title"]</h1>
+
+<ul>
+    @foreach (QuizModel quizModel in @Model)
+    {
+        <li>
+            @quizModel?.Title | @quizModel?.Description
+        </li>
+    }
+</ul>
