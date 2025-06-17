@@ -3,18 +3,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using quiz_project.Database;
 using quiz_project.Entities;
-using quiz_project.Migrations.Database;
+
 
 #nullable disable
 
-namespace quiz_project.Migrations
+namespace quiz_project.Database.Migrations
 {
     [DbContext(typeof(QuizDb))]
     [Migration("20250617100128_InitialMigration")]
     partial class InitialMigration
     {
-        /// <inheritdoc />
+        /// <inheritdoc >
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

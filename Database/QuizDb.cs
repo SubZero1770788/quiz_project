@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using quiz_project.Entities;
 
-namespace quiz_project.Migrations.Database
+namespace quiz_project.Database
 {
     public class QuizDb : DbContext
     {

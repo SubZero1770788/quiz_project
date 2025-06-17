@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using quiz_project.Database;
 using quiz_project.Entities;
 using quiz_project.Interfaces;
-using quiz_project.Migrations.Database;
 using quiz_project.Models;
 
 namespace quiz_project.Controllers

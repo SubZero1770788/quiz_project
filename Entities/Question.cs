@@ -12,5 +12,6 @@ namespace quiz_project.Entities
         public List<Answer>? Answers { get; set; }
         public required int QuizId { get; set; }
         public Quiz Quiz { get; set; }
+        public int QuestionScore { get; set; }
     }
 }

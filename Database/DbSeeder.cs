@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using quiz_project.Entities;
 
-namespace quiz_project.Migrations.Database
+namespace quiz_project.Database
 {
     public static class DbSeeder
     {

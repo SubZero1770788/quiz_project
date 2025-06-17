@@ -11,5 +11,6 @@ namespace quiz_project.Entities
         public required string Description { get; set; }
         public required int QuestionId { get; set; }
         public Question Question { get; set; }
+        public bool IsCorrect { get; set; } = false;
     }
 }

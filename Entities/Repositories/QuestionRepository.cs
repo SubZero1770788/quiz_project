@@ -8,26 +8,24 @@ using quiz_project.Interfaces;
 
 namespace quiz_project.Entities.Repositories
 {
-    public class QuizRepository(QuizDb context) : IQuizRepository
+    public class QuestionRepository(QuizDb context) : IQuestionRepository
     {
-        public void DeleteQuiz(Quiz quiz)
+        public void DeleteQuestion(Question question)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Quiz> GetQuizById(int quizId)
+        public Task<Question> GetQuestionById(int QuestionId)
         {
-            var quiz = await context.Quizzes.FirstOrDefaultAsync(q => q.QuizId == quizId);
-            return quiz;
+            throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<Quiz>> GetQuizesAsync()
+        public Task<IEnumerable<Question>> GetQuestionsAsync()
         {
-            var quizes = await context.Quizzes.ToListAsync();
-            return quizes;
+            throw new NotImplementedException();
         }
 
-        public void InsertQuiz(Quiz quiz)
+        public void InsertQuestion(Question question)
         {
             throw new NotImplementedException();
         }
@@ -37,7 +35,7 @@ namespace quiz_project.Entities.Repositories
             throw new NotImplementedException();
         }
 
-        public void UpdateQuiz(Quiz quiz)
+        public void UpdateQuestion(Question question)
         {
             throw new NotImplementedException();
         }

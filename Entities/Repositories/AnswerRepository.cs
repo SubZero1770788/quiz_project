@@ -6,28 +6,27 @@ using Microsoft.EntityFrameworkCore;
 using quiz_project.Database;
 using quiz_project.Interfaces;
 
+
 namespace quiz_project.Entities.Repositories
 {
-    public class QuizRepository(QuizDb context) : IQuizRepository
+    public class AnswerRepository(QuizDb context) : IAnswerRepository
     {
-        public void DeleteQuiz(Quiz quiz)
+        public void DeleteAnswer(Answer answer)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Quiz> GetQuizById(int quizId)
+        public Task<Answer> GetAnswerById(int answerId)
         {
-            var quiz = await context.Quizzes.FirstOrDefaultAsync(q => q.QuizId == quizId);
-            return quiz;
+            throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<Quiz>> GetQuizesAsync()
+        public Task<IEnumerable<Answer>> GetAnswersAsync()
         {
-            var quizes = await context.Quizzes.ToListAsync();
-            return quizes;
+            throw new NotImplementedException();
         }
 
-        public void InsertQuiz(Quiz quiz)
+        public void InsertAnswer(Answer answer)
         {
             throw new NotImplementedException();
         }
@@ -37,7 +36,7 @@ namespace quiz_project.Entities.Repositories
             throw new NotImplementedException();
         }
 
-        public void UpdateQuiz(Quiz quiz)
+        public void UpdateAnswer(Answer answer)
         {
             throw new NotImplementedException();
         }

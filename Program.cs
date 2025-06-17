@@ -2,10 +2,10 @@ using System.Net.WebSockets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using quiz_project.Controllers;
+using quiz_project.Database;
 using quiz_project.Entities;
 using quiz_project.Entities.Repositories;
 using quiz_project.Interfaces;
-using quiz_project.Migrations.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 

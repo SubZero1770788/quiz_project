@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace quiz_project.Migrations
+namespace quiz_project.Database.Migrations
 {
     /// <inheritdoc />
     public partial class InitialMigration : Migration
