@@ -35,8 +35,22 @@ namespace quiz_project.Database
                 .OnDelete(DeleteBehavior.Cascade);
             });
 
+            mb.Entity<Answer>(a =>
+            {
+                a.HasKey(a => a.AnswerId);
+            });
+
+            mb.Entity<User>(u =>
+            {
+                u.HasKey(u => u.Id);
+
+                u.HasMany(u => u.Quizzes)
+                .WithOne(q => q.User)
+                .HasForeignKey(u => u.UserId);
+            });
         }
 
+        public DbSet<User> Users { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }

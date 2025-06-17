@@ -1,23 +1,19 @@
 using System.Net.WebSockets;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using quiz_project.Controllers;
 using quiz_project.Database;
 using quiz_project.Entities;
 using quiz_project.Entities.Repositories;
+using quiz_project.Helpers;
 using quiz_project.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-var connection = builder.Configuration.GetConnectionString("DefaultConnection") ??
-    throw new InvalidOperationException("Connection string 'DefaultConnection' was not found");
-builder.Services.AddDbContext<QuizDb>(o => o.UseSqlite(connection));
-builder.Services.AddScoped<IQuizRepository, QuizRepository>();
-
-var app = builder.Build();
+// Adding all services through ServiceConfigurer helper class
+var finishedBuilder = ServiceConfigurer.Configure(builder);
+var app = finishedBuilder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -32,17 +28,20 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id:int?}");
 
+// Adding fallback to routing table
 app.MapControllerRoute(
     name: "fallback",
     pattern: "{*Home}",
     defaults: new { controller = "Home", action = "Index" });
 
+// Seeding database if data is not available
 using (var scope = app.Services.CreateAsyncScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<QuizDb>();

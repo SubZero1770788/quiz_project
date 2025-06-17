@@ -21,17 +21,36 @@ namespace quiz_project.Database
             using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
+                var Users = new List<User>
+                {
+                    new User{
+                        Id = 1,
+                        UserName = "Michael",
+                        Email = "michael@123"
+                    },
+                    new User{
+                        Id = 2,
+                        UserName = "Sylvia",
+                        Email = "sylvia123@o2.org"
+                    },
+                };
+
+                await context.Users.AddRangeAsync(Users);
+                await context.SaveChangesAsync();
+
                 var quizes = new List<Quiz>
                 {
                     new Quiz{
                         QuizId = 1,
                         Title = "My first quiz",
                         Description = "This quiz has no other meaning",
+                        UserId = 1
                     },
                     new Quiz{
                         QuizId = 2,
                         Title = "My second quiz",
-                        Description = "I did not know I can create more of them !"
+                        Description = "I did not know I can create more of them !",
+                        UserId = 1
                     }
                 };
 

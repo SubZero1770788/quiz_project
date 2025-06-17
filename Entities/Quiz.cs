@@ -11,6 +11,7 @@ namespace quiz_project.Entities
         public required string Title { get; set; }
         public required string Description { get; set; }
         public List<Question>? Questions { get; set; }
-
+        public User User { get; set; }
+        public required int UserId { get; set; }
     }
 }
