@@ -22,9 +22,9 @@ namespace quiz_project.Helpers
             var connection = builder.Configuration.GetConnectionString("DefaultConnection") ??
                 throw new InvalidOperationException("Connection string 'DefaultConnection' was not found");
 
-            // Adding services for database and identity
+            // Adding services for identity and database 
             builder.Services.AddDbContext<QuizDb>(o => o.UseSqlite(connection));
-            builder.Services.AddIdentity<User, IdentityRole>(opt =>
+            builder.Services.AddIdentity<User, Role>(opt =>
             {
                 opt.Lockout.AllowedForNewUsers = true;
                 opt.Lockout.MaxFailedAccessAttempts = 3;
@@ -41,7 +41,6 @@ namespace quiz_project.Helpers
             }).AddEntityFrameworkStores<QuizDb>();
 
 
-            // Adding all services necessary for controller DI
             builder.Services.AddScoped<IQuizRepository, QuizRepository>();
             builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
             builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();

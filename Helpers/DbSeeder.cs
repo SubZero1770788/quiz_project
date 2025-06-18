@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using quiz_project.Entities;
 
 namespace quiz_project.Database
 {
     public static class DbSeeder
     {
-        public async static void Initialize(QuizDb context)
+        public async static void Initialize(AsyncServiceScope scope, QuizDb context)
         {
             await context.Database.EnsureCreatedAsync();
 
@@ -24,18 +25,20 @@ namespace quiz_project.Database
                 var Users = new List<User>
                 {
                     new User{
-                        Id = 1,
                         UserName = "Michael",
                         Email = "michael@123"
                     },
                     new User{
-                        Id = 2,
                         UserName = "Sylvia",
                         Email = "sylvia123@o2.org"
                     },
                 };
 
-                await context.Users.AddRangeAsync(Users);
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                foreach (User user in Users)
+                {
+                    await userManager.CreateAsync(user, "123123ASD!@#a");
+                }
                 await context.SaveChangesAsync();
 
                 var quizes = new List<Quiz>

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using quiz_project.Database;
 using quiz_project.Entities;
 using quiz_project.Interfaces;
 using quiz_project.Models;
@@ -17,10 +16,10 @@ namespace quiz_project.Controllers
         {
             var quizes = await quizRepository.GetQuizesAsync();
 
-            var quizModels = new List<QuizModel>();
+            var quizModels = new List<QuizViewModel>();
             foreach (Quiz q in quizes)
             {
-                quizModels.Add(new QuizModel
+                quizModels.Add(new QuizViewModel
                 {
                     QuizId = q.QuizId,
                     Title = q.Title,

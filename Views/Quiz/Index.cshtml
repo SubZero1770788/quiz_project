@@ -1,15 +1,15 @@
 @{
     ViewData["Title"] = "Quiz site";
 }
-@model List<quiz_project.Models.QuizModel>
+@model List<quiz_project.Models.QuizViewModel>
 
 <h1>@ViewData["Title"]</h1>
 
 <ul>
-    @foreach (QuizModel quizModel in @Model)
+    @foreach (QuizViewModel quizViewModel in @Model)
     {
         <li>
-            @quizModel?.Title | @quizModel?.Description
+            @quizViewModel?.Title | @quizViewModel?.Description
         </li>
     }
 </ul>

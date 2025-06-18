@@ -6,7 +6,7 @@ using quiz_project.Entities;
 
 namespace quiz_project.Models
 {
-    public class QuizModel
+    public class QuizViewModel
     {
         public int QuizId { get; set; }
         public required string Title { get; set; }

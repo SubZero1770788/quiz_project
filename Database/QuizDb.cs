@@ -2,17 +2,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using quiz_project.Entities;
 
 namespace quiz_project.Database
 {
-    public class QuizDb : DbContext
+    public class QuizDb : IdentityDbContext<User, Role, int>
     {
-        public QuizDb(DbContextOptions<QuizDb> options) : base(options)
-        {
-        }
+        public QuizDb(DbContextOptions<QuizDb> options) : base(options) { }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder ob)
+        {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var con = config.GetConnectionString("DefaultConnection");
+            ob.UseSqlite(con);
+
+
+        }
         protected override void OnModelCreating(ModelBuilder mb)
         {
             mb.Entity<Quiz>(en =>
@@ -46,8 +57,11 @@ namespace quiz_project.Database
 
                 u.HasMany(u => u.Quizzes)
                 .WithOne(q => q.User)
-                .HasForeignKey(u => u.UserId);
+                .HasForeignKey(q => q.UserId);
             });
+
+            base.OnModelCreating(mb);
+            mb.ApplyConfiguration(new RoleConfiguration());
         }
 
         public DbSet<User> Users { get; set; }
