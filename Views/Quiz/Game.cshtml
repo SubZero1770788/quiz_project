@@ -1,0 +1,27 @@
+@model quiz_project.Models.QuizViewModel;
+
+<h1>Welcome to the quiz: @Model.Title</h1>
+
+<div class="row col-12">
+    <div class="row col-6">
+        <h3>Total score: @Model.TotalScore</h3>
+        <h3>Total question count: @Model.QuestionCount</h3>
+        <div class="row">
+            @Model.Description
+        </div>
+    </div>
+    <div class="row col-6">
+        There'll be leaderboard
+    </div>
+</div>
+
+<div class="row col-12 justify-content-between">
+    <form asp-controller="QuizGame" asp-action="Index" method="get" class="col">
+        <input type="hidden" name="QuizId" value="@Model?.QuizId" />
+        <button type="submit" class="btn btn-success text-white" style="margin: 2px">Continue</button>
+    </form>
+    <form asp-controller="Quiz" asp-action="Index" method="get" class="col">
+        <input type="hidden" name="QuizId" value="@Model?.QuizId" />
+        <button type="submit" class="btn btn-danger text-white" style="margin: 2px">Return</button>
+    </form>
+</div>

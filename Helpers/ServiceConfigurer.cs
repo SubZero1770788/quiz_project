@@ -8,6 +8,7 @@ using quiz_project.Database;
 using quiz_project.Entities;
 using quiz_project.Entities.Repositories;
 using quiz_project.Interfaces;
+using quiz_project.Services;
 
 namespace quiz_project.Helpers
 {
@@ -52,6 +53,7 @@ namespace quiz_project.Helpers
 
 
             builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+            builder.Services.AddScoped<IAccessValidationService, AccessValidationService>();
 
             return builder;
         }

@@ -32,7 +32,8 @@ namespace quiz_project.Entities.Repositories
 
         public async Task<IEnumerable<Quiz>> GetQuizesByUserAsync(User user)
         {
-            var quizes = await context.Quizzes.Where(x => x.UserId == user.Id).ToListAsync();
+            var quizes = await context.Quizzes.Where(x => x.UserId == user.Id)
+                                        .Include(q => q.Questions).ThenInclude(q => q.Answers).ToListAsync();
             return quizes;
         }
 
