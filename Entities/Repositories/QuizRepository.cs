@@ -10,14 +10,16 @@ namespace quiz_project.Entities.Repositories
 {
     public class QuizRepository(QuizDb context) : IQuizRepository
     {
-        public void DeleteQuiz(Quiz quiz)
+        public async Task DeleteQuizAsync(Quiz quiz)
         {
-            throw new NotImplementedException();
+            var oldQuiz = await context.Quizzes.Where(q => q.QuizId == quiz.QuizId).FirstAsync();
+            context.Quizzes.Remove(oldQuiz);
+            await context.SaveChangesAsync();
         }
 
-        public async Task<Quiz> GetQuizById(int quizId)
+        public async Task<Quiz> GetQuizByIdAsync(int quizId)
         {
-            var quiz = await context.Quizzes.FirstOrDefaultAsync(q => q.QuizId == quizId);
+            var quiz = await context.Quizzes.Where(q => q.QuizId == quizId).FirstAsync();
             return quiz;
         }
 
@@ -27,19 +29,27 @@ namespace quiz_project.Entities.Repositories
             return quizes;
         }
 
-        public void InsertQuiz(Quiz quiz)
+        public async Task<IEnumerable<Quiz>> GetQuizesByUserAsync(User user)
         {
-            throw new NotImplementedException();
+            var quizes = await context.Quizzes.Where(x => x.UserId == user.Id).ToListAsync();
+            return quizes;
         }
 
-        public void Save()
+        public async Task CreateQuizAsync(Quiz quiz)
         {
-            throw new NotImplementedException();
+            await context.AddAsync(quiz);
+            await context.SaveChangesAsync();
         }
 
-        public void UpdateQuiz(Quiz quiz)
+        public async Task UpdateQuizAsync(Quiz quiz)
         {
-            throw new NotImplementedException();
+            var oldQuiz = await context.Quizzes.Where(q => q.QuizId == quiz.QuizId).FirstAsync();
+            context.Quizzes.Remove(oldQuiz);
+            await context.SaveChangesAsync();
+
+            var res = await context.Quizzes.AddAsync(quiz);
+            await context.SaveChangesAsync();
         }
+
     }
 }

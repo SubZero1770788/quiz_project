@@ -133,6 +133,40 @@ namespace quiz_project.Database
 
                 await context.Answers.AddRangeAsync(answers);
                 await context.SaveChangesAsync();
+
+
+                //fix error with roles not seeding
+                if (!context.Roles.Any())
+                {
+                    var roles = new List<Role>{
+                        new Role()
+                        {
+                            Id = 1,
+                            Name = "User",
+                            NormalizedName = "USER"
+                        },
+                        new Role()
+                        {
+                            Id = 2,
+                            Name = "Moderator",
+                            NormalizedName = "MODERATOR"
+                        },
+                        new Role()
+                        {
+                            Id = 3,
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        }
+                    };
+
+                    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+                    foreach (Role role in roles)
+                    {
+                        await roleManager.CreateAsync(role);
+                    }
+                    await context.SaveChangesAsync();
+                }
+
                 await transaction.CommitAsync();
 
                 Console.WriteLine("The database has been seeded successfully!");

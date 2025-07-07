@@ -9,10 +9,10 @@ namespace quiz_project.Interfaces
     public interface IQuestionRepository
     {
         Task<IEnumerable<Question>> GetQuestionsAsync();
-        Task<Question> GetQuestionById(int QuestionId);
-        void InsertQuestion(Question question);
-        void DeleteQuestion(Question question);
-        void UpdateQuestion(Question question);
-        void Save();
+        Task<Question> GetQuestionByIdAsync(int QuestionId);
+        Task CreateQuestionAsync(Question question);
+        Task DeleteQuestionAsync(Question question);
+        Task UpdateQuestionAsync(Question question);
+
     }
 }

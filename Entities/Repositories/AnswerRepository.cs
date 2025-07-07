@@ -11,12 +11,12 @@ namespace quiz_project.Entities.Repositories
 {
     public class AnswerRepository(QuizDb context) : IAnswerRepository
     {
-        public void DeleteAnswer(Answer answer)
+        public Task DeleteAnswerAsync(Answer answer)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Answer> GetAnswerById(int answerId)
+        public Task<Answer> GetAnswerByIdAsync(int answerId)
         {
             throw new NotImplementedException();
         }
@@ -26,17 +26,12 @@ namespace quiz_project.Entities.Repositories
             throw new NotImplementedException();
         }
 
-        public void InsertAnswer(Answer answer)
+        public Task CreateAnswerAsync(Answer answer)
         {
             throw new NotImplementedException();
         }
 
-        public void Save()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void UpdateAnswer(Answer answer)
+        public Task UpdateAnswerAsync(Answer answer)
         {
             throw new NotImplementedException();
         }

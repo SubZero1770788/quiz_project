@@ -9,10 +9,9 @@ namespace quiz_project.Interfaces
     public interface IAnswerRepository
     {
         Task<IEnumerable<Answer>> GetAnswersAsync();
-        Task<Answer> GetAnswerById(int answerId);
-        void InsertAnswer(Answer answer);
-        void DeleteAnswer(Answer answer);
-        void UpdateAnswer(Answer answer);
-        void Save();
+        Task<Answer> GetAnswerByIdAsync(int answerId);
+        Task CreateAnswerAsync(Answer answer);
+        Task DeleteAnswerAsync(Answer answer);
+        Task UpdateAnswerAsync(Answer answer);
     }
 }

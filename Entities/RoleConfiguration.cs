@@ -8,22 +8,28 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace quiz_project.Entities
 {
-    public class RoleConfiguration : IEntityTypeConfiguration<IdentityRole>
+    public class RoleConfiguration : IEntityTypeConfiguration<Role>
     {
-        public void Configure(EntityTypeBuilder<IdentityRole> builder)
+        public void Configure(EntityTypeBuilder<Role> builder)
         {
             builder.HasData(
-                new IdentityRole()
+                new Role()
                 {
-                    Name = "User"
+                    Id = 1,
+                    Name = "User",
+                    NormalizedName = "USER"
                 },
-                new IdentityRole()
+                new Role()
                 {
-                    Name = "Moderator"
+                    Id = 2,
+                    Name = "Moderator",
+                    NormalizedName = "MODERATOR"
                 },
-                new IdentityRole()
+                new Role()
                 {
-                    Name = "Admin"
+                    Id = 3,
+                    Name = "Admin",
+                    NormalizedName = "ADMIN"
                 }
             );
         }

@@ -11,6 +11,7 @@ namespace quiz_project.Entities
     {
         public List<Quiz>? Quizzes { get; set; }
         public override string? UserName { get; set; }
+        public bool IsLoggedIn { get; set; } = false;
 
         // Excluding properties from IdentityUser that I don't need
 

@@ -9,10 +9,11 @@ namespace quiz_project.Interfaces
     public interface IQuizRepository
     {
         Task<IEnumerable<Quiz>> GetQuizesAsync();
-        Task<Quiz> GetQuizById(int quizId);
-        void InsertQuiz(Quiz quiz);
-        void DeleteQuiz(Quiz quiz);
-        void UpdateQuiz(Quiz quiz);
-        void Save();
+        Task<IEnumerable<Quiz>> GetQuizesByUserAsync(User user);
+        Task<Quiz> GetQuizByIdAsync(int quizId);
+        Task DeleteQuizAsync(Quiz quiz);
+        Task UpdateQuizAsync(Quiz quiz);
+
+        Task CreateQuizAsync(Quiz quiz);
     }
 }

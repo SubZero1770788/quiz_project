@@ -3,18 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using quiz_project.Database;
 using quiz_project.Entities;
 using quiz_project.Interfaces;
 using quiz_project.Models;
 
 namespace quiz_project.Controllers
 {
-    public class UserController(SignInManager<User> signInManager,
-        UserManager<User> userManager) : Controller
+    public class UserController(QuizDb context, SignInManager<User> signInManager,
+        UserManager<User> userManager, RoleManager<Role> roleManager) : Controller
     {
         [HttpGet]
         public async Task<ViewResult> Index()
@@ -24,8 +28,17 @@ namespace quiz_project.Controllers
         [HttpGet]
         public async Task<ViewResult> GetAllUsers()
         {
+            var users = await userManager.Users.ToListAsync();
             return View();
         }
+
+        [HttpGet]
+        public async Task<ViewResult> GetAllActiveUsers()
+        {
+            var users = await userManager.Users.Where(u => u.IsLoggedIn == true).ToListAsync();
+            return View();
+        }
+
         [HttpGet]
         public async Task<ViewResult> AccountSettings()
         {
@@ -60,8 +73,16 @@ namespace quiz_project.Controllers
                 var created = await userManager.CreateAsync(user, registerViewModel.Password);
                 if (created.Succeeded)
                 {
+                    var defaultRole = await roleManager.FindByNameAsync("User");
+
+                    await userManager.AddToRoleAsync(user, defaultRole!.Name!);
+                    user.IsLoggedIn = true;
+                    await userManager.UpdateAsync(user);
+                    await context.SaveChangesAsync();
                     await signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+                    HttpContext.Session.SetString("UserName", user.UserName);
+
+                    return RedirectToAction("Index", "Quiz");
                 }
 
                 foreach (var error in created.Errors)
@@ -78,6 +99,7 @@ namespace quiz_project.Controllers
             return View();
         }
 
+        // This is a redirect after POST in order to combat the page refresh issue when submitting data in MVC
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
         {
@@ -99,7 +121,13 @@ namespace quiz_project.Controllers
                 }
 
                 else if (res.Succeeded)
-                    return RedirectToAction("Index", "Home");
+                {
+                    user.IsLoggedIn = true;
+                    await userManager.UpdateAsync(user);
+                    await context.SaveChangesAsync();
+                    HttpContext.Session.SetString("UserName", loginViewModel.UserName);
+                    return RedirectToAction("Index", "Quiz");
+                }
 
                 await userManager.AccessFailedAsync(user);
 
@@ -112,6 +140,21 @@ namespace quiz_project.Controllers
             }
 
             return View(loginViewModel);
+        }
+
+        [HttpGet]
+        public async Task<RedirectToActionResult> Logout()
+        {
+            var username = HttpContext.Session.GetString("UserName");
+            if (username is not null)
+            {
+                var user = await userManager.FindByNameAsync(username!);
+                await signInManager.SignOutAsync();
+                user.IsLoggedIn = false;
+                await userManager.UpdateAsync(user);
+                await context.SaveChangesAsync();
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }

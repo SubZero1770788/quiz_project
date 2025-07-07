@@ -41,6 +41,16 @@ namespace quiz_project.Helpers
             }).AddEntityFrameworkStores<QuizDb>();
 
 
+            // Adding session and cookies support
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(o =>
+            {
+                o.IdleTimeout = TimeSpan.FromMinutes(10);
+                o.Cookie.HttpOnly = true;
+                o.Cookie.IsEssential = true;
+            });
+
+
             builder.Services.AddScoped<IQuizRepository, QuizRepository>();
             builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
             builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
