@@ -52,8 +52,6 @@ namespace quiz_project.Helpers
 
 
             builder.Services.AddScoped<IQuizRepository, QuizRepository>();
-            builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
-            builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 
             return builder;
         }

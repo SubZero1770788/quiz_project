@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,10 +9,12 @@ namespace quiz_project.Entities
     public class Question
     {
         public int QuestionId { get; set; }
-        public required string Description { get; set; }
-        public List<Answer>? Answers { get; set; }
-        public required int QuizId { get; set; }
-        public Quiz Quiz { get; set; }
+        [Required]
+        public string Description { get; set; }
         public int QuestionScore { get; set; }
+        public int QuizId { get; set; }
+        public Quiz Quiz { get; set; }
+        [Range(0, 100)]
+        public List<Answer> Answers { get; set; } = new();
     }
 }

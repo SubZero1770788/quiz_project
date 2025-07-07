@@ -4,11 +4,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AspNetCoreGeneratedDocument;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using quiz_project.Database;
+using quiz_project.Database.Migrations;
 using quiz_project.Entities;
+using quiz_project.Entities.Repositories;
 using quiz_project.Interfaces;
 using quiz_project.Models;
 
@@ -76,7 +79,17 @@ namespace quiz_project.Controllers
                 {
                     Title = quizViewModel.Title,
                     Description = quizViewModel.Description,
-                    UserId = user!.Id
+                    UserId = user!.Id,
+                    Questions = quizViewModel.Questions.Select(qvm => new Question
+                    {
+                        QuestionScore = qvm.QuestionScore,
+                        Description = qvm.Description,
+                        Answers = qvm.Answers.Select(avm => new Answer
+                        {
+                            Description = avm.Description,
+                            IsCorrect = avm.IsCorrect
+                        }).ToList()
+                    }).ToList()
                 };
 
                 try
@@ -87,6 +100,7 @@ namespace quiz_project.Controllers
                 {
                     ModelState.AddModelError(String.Empty, $"Something went wrong: {e}");
                 }
+
                 return RedirectToAction("Index");
             }
             // After adding did not work
@@ -106,6 +120,16 @@ namespace quiz_project.Controllers
                 QuizId = quiz!.QuizId,
                 Title = quiz.Title,
                 Description = quiz.Description,
+                Questions = quiz.Questions.Select(qvm => new QuestionViewModel
+                {
+                    QuestionScore = qvm.QuestionScore,
+                    Description = qvm.Description,
+                    Answers = qvm.Answers.Select(avm => new AnswerViewModel
+                    {
+                        Description = avm.Description,
+                        IsCorrect = avm.IsCorrect
+                    }).ToList()
+                }).ToList()
             };
 
             return View(quizViewModel);
@@ -126,7 +150,17 @@ namespace quiz_project.Controllers
                     QuizId = quizViewModel.QuizId,
                     Title = quizViewModel.Title,
                     Description = quizViewModel.Description,
-                    UserId = user!.Id
+                    UserId = user!.Id,
+                    Questions = quizViewModel.Questions.Select(qvm => new Question
+                    {
+                        QuestionScore = qvm.QuestionScore,
+                        Description = qvm.Description,
+                        Answers = qvm.Answers.Select(avm => new Answer
+                        {
+                            Description = avm.Description,
+                            IsCorrect = avm.IsCorrect
+                        }).ToList()
+                    }).ToList()
                 };
 
                 try
@@ -138,8 +172,11 @@ namespace quiz_project.Controllers
                     ModelState.AddModelError(String.Empty, $"Something went wrong: {e}");
                 }
             }
+            ;
+
             return RedirectToAction("Index");
         }
+
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteQuizAsync(int Id)
         {

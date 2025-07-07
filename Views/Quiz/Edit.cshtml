@@ -2,21 +2,60 @@
 
 <h1>Edit this quiz</h1>
 
-<div class="row">
-    <div class="col-md-12">
-        <form method="post">
+<form method="post">
+    <div class="row">
+
+        <div class="col-md-6">
             <div class="form-group">
                 <label asp-for="Title"></label>
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="Description"></label>
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div asp-validation-summary="All" class="text-danger"></div>
-            <button type="submit" class="btn btn-primary">Update</button>
-        </form>
+            <button type="submit" class="btn btn-primary mt-2">Update</button>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end align-items-start">
+
+            @for (int i = 0; i < Model.Questions.Count; i++)
+            {
+                var question = Model.Questions[i];
+
+                <div class="border p-3 mb-3 bg-light">
+                    <h5>Question @(i + 1)</h5>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input name="Questions[0].Description" asp-for="@question.Description" class="form-control" />
+                        <span asp-validation-for="@question.Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Score</label>
+                        <input name="Questions[0].QuestionScore" asp-for="@question.QuestionScore" class="form-control" />
+                        <span asp-validation-for="@question.QuestionScore" class="text-danger"></span>
+                    </div>
+
+                    @for (int j = 0; j < question.Answers.Count; j++)
+                    {
+                        var answer = question.Answers[j];
+                        <div class="form-group">
+                            <label>Answer @(j + 1)</label>
+                            <input name="Questions[0].Answers[0].Description" asp-for="@answer.Description"
+                                class="form-control mb-1" />
+                            <div class="form-check">
+                                <label class="form-check-label">Correct</label>
+                                <input name="Questions[0].Answers[0].IsCorrect" asp-for="@answer.IsCorrect"
+                                    class="form-check-input" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <div asp-validation-summary="All" class="text-danger"></div>
     </div>
-</div>
+</form>

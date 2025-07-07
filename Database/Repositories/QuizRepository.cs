@@ -19,7 +19,8 @@ namespace quiz_project.Entities.Repositories
 
         public async Task<Quiz> GetQuizByIdAsync(int quizId)
         {
-            var quiz = await context.Quizzes.Where(q => q.QuizId == quizId).FirstAsync();
+            var quiz = await context.Quizzes.Where(q => q.QuizId == quizId)
+                                        .Include(q => q.Questions).ThenInclude(q => q.Answers).FirstAsync();
             return quiz;
         }
 
@@ -50,6 +51,5 @@ namespace quiz_project.Entities.Repositories
             var res = await context.Quizzes.AddAsync(quiz);
             await context.SaveChangesAsync();
         }
-
     }
 }
