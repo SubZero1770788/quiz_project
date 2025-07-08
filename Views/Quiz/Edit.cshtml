@@ -29,13 +29,13 @@
                     <h5>Question @(i + 1)</h5>
                     <div class="form-group">
                         <label>Description</label>
-                        <input name="Questions[0].Description" asp-for="@question.Description" class="form-control" />
+                        <input name="Questions[@i].Description" asp-for="@question.Description" class="form-control" />
                         <span asp-validation-for="@question.Description" class="text-danger"></span>
                     </div>
 
                     <div class="form-group">
                         <label>Score</label>
-                        <input name="Questions[0].QuestionScore" asp-for="@question.QuestionScore" class="form-control" />
+                        <input name="Questions[@i].QuestionScore" asp-for="@question.QuestionScore" class="form-control" />
                         <span asp-validation-for="@question.QuestionScore" class="text-danger"></span>
                     </div>
 
@@ -44,12 +44,14 @@
                         var answer = question.Answers[j];
                         <div class="form-group">
                             <label>Answer @(j + 1)</label>
-                            <input name="Questions[0].Answers[0].Description" asp-for="@answer.Description"
+                            <input name="Questions[@i].Answers[@j].Description" asp-for="@answer.Description"
                                 class="form-control mb-1" />
+                            <span asp-validation-for="Questions[@i].Answers[@j].Description" class="text-danger"></span>
                             <div class="form-check">
                                 <label class="form-check-label">Correct</label>
-                                <input name="Questions[0].Answers[0].IsCorrect" asp-for="@answer.IsCorrect"
+                                <input name="Questions[@i].Answers[@j].IsCorrect" asp-for="@answer.IsCorrect"
                                     class="form-check-input" />
+                                <span asp-validation-for="Questions[@i].Answers[@j].IsCorrect" class="text-danger"></span>
                             </div>
                         </div>
                     }

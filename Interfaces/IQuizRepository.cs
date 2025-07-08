@@ -13,7 +13,7 @@ namespace quiz_project.Interfaces
         Task<Quiz> GetQuizByIdAsync(int quizId);
         Task DeleteQuizAsync(Quiz quiz);
         Task UpdateQuizAsync(Quiz quiz);
-
         Task CreateQuizAsync(Quiz quiz);
+        Task<List<Question>> GetQuestionsByQuizId(int quizId);
     }
 }

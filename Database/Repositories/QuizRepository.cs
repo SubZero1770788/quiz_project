@@ -52,5 +52,11 @@ namespace quiz_project.Entities.Repositories
             var res = await context.Quizzes.AddAsync(quiz);
             await context.SaveChangesAsync();
         }
+
+        public async Task<List<Question>> GetQuestionsByQuizId(int quizId)
+        {
+            var questions = await context.Questions.Where(q => q.QuizId == quizId).Include(q => q.Answers).ToListAsync();
+            return questions;
+        }
     }
 }

@@ -1,0 +1,32 @@
+@model quiz_project.Models.GameViewModel
+
+<h2>Question @(Model.CurrentPage) of @Model.TotalPages</h2>
+
+<div class="mb-3">
+    <h3>Enjoy solving this quiz</h3>
+</div>
+
+<form asp-action="Play" method="post">
+    <input type="hidden" name="CurrentPage" value="@Model.CurrentPage" />
+
+    <div class="form-group">
+        @for (int j = 0; j < Model.Questions.Count; j++)
+        {
+            var question = Model.Questions[@j];
+
+            <h4>@question.Description</h4>
+            @for (int i = 0; i < question.Answers.Count; i++)
+            {
+                var answer = question.Answers[@i];
+                <div class="form-check-@i">
+                    <input type="checkbox" name="SelectedAnswerIds" class="form-check-input" id="answer_@j@i"
+                        value="@answer.AnswerId" id="answer_@i" />
+                    <label class="form-check-label" for="answer_@i">@answer.Description</label>
+                </div>
+            }
+        }
+
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Next</button>
+</form>

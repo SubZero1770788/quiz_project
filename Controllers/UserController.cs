@@ -10,8 +10,10 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using quiz_project.Common;
 using quiz_project.Database;
 using quiz_project.Entities;
+using quiz_project.Extensions;
 using quiz_project.Interfaces;
 using quiz_project.Models;
 
@@ -108,7 +110,7 @@ namespace quiz_project.Controllers
                 var user = await userManager.FindByNameAsync(loginViewModel.UserName);
                 if (user is null)
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, ErrorMessagesExtension.GetMessage(ErrorMessages.InvalidLoginAttempt));
                     return View(loginViewModel);
                 }
 
@@ -116,7 +118,7 @@ namespace quiz_project.Controllers
 
                 if (res.IsLockedOut)
                 {
-                    ModelState.AddModelError(string.Empty, "The account got locked out after multiple unsuccessful login attempts");
+                    ModelState.AddModelError(string.Empty, ErrorMessagesExtension.GetMessage(ErrorMessages.AccountLocked));
                     return View(loginViewModel);
                 }
 

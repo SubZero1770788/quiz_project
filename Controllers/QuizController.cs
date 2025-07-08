@@ -17,8 +17,10 @@ using quiz_project.Models;
 
 namespace quiz_project.Controllers
 {
+
     public class QuizController(IQuizRepository quizRepository, IAccessValidationService accessValidationService) : Controller
     {
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
@@ -51,6 +53,7 @@ namespace quiz_project.Controllers
             return View(quizViewModels);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Getquiz(int quizId)
         {
             var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
@@ -155,6 +158,8 @@ namespace quiz_project.Controllers
                 if (user is null) return redirect!;
                 var (quiz, quizRedirect) = await accessValidationService.GetUserOwnsQuiz(quizViewModel.QuizId, user!, this);
                 if (quiz is null) return quizRedirect!;
+                var (hasAll, editRedirect) = await accessValidationService.EachQuestionHasAnswer(quizViewModel, ModelState, this);
+                if (hasAll is null) return editRedirect!;
 
                 var Quiz = new Quiz()
                 {
@@ -218,6 +223,7 @@ namespace quiz_project.Controllers
 
             var quizViewModel = new QuizViewModel
             {
+                QuizId = quiz.QuizId,
                 Title = quiz.Title,
                 Description = quiz.Description,
                 Questions = quiz.Questions.Select(qvm => new QuestionViewModel

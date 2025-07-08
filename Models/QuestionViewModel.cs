@@ -8,6 +8,7 @@ namespace quiz_project.Models
 {
     public class QuestionViewModel
     {
+        public int QuestionId { get; set; }
         [Required]
         public string Description { get; set; }
         public int QuestionScore { get; set; }
