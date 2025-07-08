@@ -56,8 +56,42 @@ namespace quiz_project.Database
                 u.HasKey(u => u.Id);
 
                 u.HasMany(u => u.Quizzes)
-                .WithOne(q => q.User)
-                .HasForeignKey(q => q.UserId);
+                    .WithOne(q => q.User)
+                    .HasForeignKey(q => q.UserId);
+            });
+
+            mb.Entity<QuizAttempt>(qa =>
+            {
+                qa.HasKey(qa => qa.QuizAttemptId);
+
+                qa.HasOne(qa => qa.Quiz)
+                    .WithMany()
+                    .HasForeignKey(qa => qa.QuizId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                qa.HasOne(qa => qa.User)
+                    .WithMany()
+                    .HasForeignKey(qa => qa.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                qa.HasMany(qa => qa.AnswerSelections)
+                    .WithOne(ans => ans.QuizAttempt)
+                    .HasForeignKey(ans => ans.QuizAttemptId);
+            });
+
+            mb.Entity<AnswerSelection>(ans =>
+            {
+                ans.HasKey(ans => ans.AnswerSelectionId);
+
+                ans.HasOne(ans => ans.Answer)
+                    .WithMany()
+                    .HasForeignKey(ans => ans.AnswerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                ans.HasOne(ans => ans.Question)
+                    .WithMany()
+                    .HasForeignKey(ans => ans.QuestionId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             base.OnModelCreating(mb);
@@ -68,5 +102,7 @@ namespace quiz_project.Database
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
+        public DbSet<QuizAttempt> QuizAttempts { get; set; }
+        public DbSet<AnswerSelection> AnswerSelections { get; set; }
     }
 }

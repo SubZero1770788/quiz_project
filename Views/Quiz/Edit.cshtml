@@ -46,12 +46,12 @@
                             <label>Answer @(j + 1)</label>
                             <input name="Questions[@i].Answers[@j].Description" asp-for="@answer.Description"
                                 class="form-control mb-1" />
-                            <span asp-validation-for="Questions[@i].Answers[@j].Description" class="text-danger"></span>
+                            <span asp-validation-for="@answer.Description" class="text-danger"></span>
                             <div class="form-check">
                                 <label class="form-check-label">Correct</label>
                                 <input name="Questions[@i].Answers[@j].IsCorrect" asp-for="@answer.IsCorrect"
                                     class="form-check-input" />
-                                <span asp-validation-for="Questions[@i].Answers[@j].IsCorrect" class="text-danger"></span>
+                                <span asp-validation-for="@answer.IsCorrect" class="text-danger"></span>
                             </div>
                         </div>
                     }
