@@ -15,8 +15,9 @@ namespace quiz_project.Services
 {
     public class AccessValidationService(UserManager<User> userManager, IQuizRepository quizRepository) : IAccessValidationService
     {
-        public async Task<(bool? has, IActionResult? redirect)> EachQuestionHasAnswer(QuizViewModel quizViewModel, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary ModelState, Controller controller)
+        public Boolean EachQuestionHasAnswer(QuizViewModel quizViewModel, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary ModelState, Controller controller)
         {
+            bool allCorrect = true;
             for (int i = 0; i < quizViewModel.Questions.Count; i++)
             {
                 var qvm = quizViewModel.Questions[i];
@@ -24,10 +25,12 @@ namespace quiz_project.Services
                 if (!qvm.Answers.Any(a => a.IsCorrect))
                 {
                     ModelState.AddModelError($"Questions[{i}].Answers", $"Question {i + 1} must have at least one correct answer.");
-                    return (null, controller.RedirectToAction("Edit", "Quiz"));
+                    allCorrect = false;
                 }
             }
-            return (true, controller.RedirectToAction("Index", "Quiz"));
+            if (!allCorrect)
+                return (false);
+            return (true);
         }
 
         public async Task<(User? user, IActionResult? redirect)> GetCurrentUserOrRedirect(Controller controller)

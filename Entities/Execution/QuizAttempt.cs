@@ -15,7 +15,7 @@ namespace quiz_project.Entities
         public int UserId { get; set; }
         public User User { get; set; }
 
-        public int score { get; set; }
+        public int Score { get; set; }
 
         public List<AnswerSelection> AnswerSelections { get; set; } = new();
     }

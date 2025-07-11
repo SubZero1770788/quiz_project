@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using quiz_project.Database;
+using quiz_project.Database.Repositories;
 using quiz_project.Entities;
 using quiz_project.Entities.Repositories;
 using quiz_project.Interfaces;
@@ -54,6 +55,7 @@ namespace quiz_project.Helpers
 
 
             builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+            builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
             builder.Services.AddScoped<IAccessValidationService, AccessValidationService>();
             builder.Services.AddScoped<IPaginationService<Question>, PaginationService<Question>>();
 

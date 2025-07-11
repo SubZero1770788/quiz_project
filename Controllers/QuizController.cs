@@ -88,11 +88,14 @@ namespace quiz_project.Controllers
             {
                 var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
                 if (user is null) return redirect!;
+                var hasAll = accessValidationService.EachQuestionHasAnswer(quizViewModel, ModelState, this);
+                if (hasAll is false) return View(quizViewModel)!;
 
                 var quiz = new Quiz
                 {
                     Title = quizViewModel.Title,
                     Description = quizViewModel.Description,
+                    TotalScore = quizViewModel.Questions.Sum(qvm => qvm.QuestionScore),
                     UserId = user!.Id,
                     Questions = quizViewModel.Questions.Select(qvm => new Question
                     {
@@ -158,8 +161,8 @@ namespace quiz_project.Controllers
                 if (user is null) return redirect!;
                 var (quiz, quizRedirect) = await accessValidationService.GetUserOwnsQuiz(quizViewModel.QuizId, user!, this);
                 if (quiz is null) return quizRedirect!;
-                var (hasAll, editRedirect) = await accessValidationService.EachQuestionHasAnswer(quizViewModel, ModelState, this);
-                if (hasAll is null) return editRedirect!;
+                var hasAll = accessValidationService.EachQuestionHasAnswer(quizViewModel, ModelState, this);
+                if (hasAll is false) return View(quizViewModel)!;
 
                 var Quiz = new Quiz()
                 {
@@ -167,6 +170,7 @@ namespace quiz_project.Controllers
                     Title = quizViewModel.Title,
                     Description = quizViewModel.Description,
                     UserId = user!.Id,
+                    TotalScore = quizViewModel.Questions.Sum(qvm => qvm.QuestionScore),
                     Questions = quizViewModel.Questions.Select(qvm => new Question
                     {
                         QuestionScore = qvm.QuestionScore,

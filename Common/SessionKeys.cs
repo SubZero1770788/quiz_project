@@ -2,5 +2,6 @@ public enum SessionKeys
 {
     QuizId,
     CurrentPage,
-    QuestionCount
+    QuestionCount,
+    QuizMetaData
 }
