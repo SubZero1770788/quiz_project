@@ -188,7 +188,7 @@ namespace quiz_project.Controllers
             var (quiz, quizRedirect) = await accessValidationService.GetUserOwnsQuiz(quizMetaData.QuizId, user, this);
             if (quiz is null) return quizRedirect!;
 
-            var allQuizAttempts = await attemptRepository.GetAllAttemptsByQuizAsync(quizMetaData.QuizId);
+            var allQuizAttempts = await attemptRepository.GetAllAttemptsAsync(quizMetaData.QuizId);
             var quizDefinition = await quizRepository.GetQuizByIdAsync(quizMetaData.QuizId);
 
             var playerScore = await attemptRepository.GetLatestUserAttemptAsync(quizMetaData.UserId);

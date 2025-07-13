@@ -8,17 +8,21 @@ using AspNetCoreGeneratedDocument;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using quiz_project.Database;
 using quiz_project.Database.Migrations;
+using quiz_project.Database.Repositories;
 using quiz_project.Entities;
 using quiz_project.Entities.Repositories;
 using quiz_project.Interfaces;
 using quiz_project.Models;
+using static quiz_project.Models.QuizSummaryViewModel;
 
 namespace quiz_project.Controllers
 {
 
-    public class QuizController(IQuizRepository quizRepository, IAccessValidationService accessValidationService) : Controller
+    public class QuizController(IQuizRepository quizRepository, IAccessValidationService accessValidationService,
+                                    IAttemptRepository attemptRepository, UserManager<User> userManager) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -36,6 +40,7 @@ namespace quiz_project.Controllers
                     QuizId = q!.QuizId,
                     Title = q.Title,
                     Description = q.Description,
+                    IsPublic = q.IsPublic,
                     Questions = q.Questions.Select(qvm => new QuestionViewModel
                     {
                         QuestionScore = qvm.QuestionScore,
@@ -54,7 +59,7 @@ namespace quiz_project.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Getquiz(int quizId)
+        public async Task<IActionResult> GetQuizAsync(int quizId)
         {
             var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
             if (user is null) return redirect!;
@@ -67,6 +72,45 @@ namespace quiz_project.Controllers
             };
 
             return View(quizModel);
+        }
+
+        [HttpGet, ActionName("Statistics")]
+        public async Task<IActionResult> CheckQuizStats(int Id)
+        {
+            var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
+            if (user is null) return redirect!;
+            var (quiz, quizRedirect) = await accessValidationService.GetUserOwnsQuiz(Id, user!, this);
+            if (quiz is null) return quizRedirect!;
+
+            var allQuizAttempts = await attemptRepository.GetAllAttemptsAsync(quiz.QuizId);
+            if (allQuizAttempts.Count() == 0)
+            {
+                return View("ZeroAttempts");
+            }
+            var averageScores = allQuizAttempts.Average(aqa => aqa.Score);
+            var topUserAttempt = await attemptRepository.GetTopUserAttemptAsync(user.Id, quiz.QuizId);
+            var topScores = allQuizAttempts.OrderBy(aqa => aqa.Score).Take(10).ToList();
+            var users = await userManager.Users.ToDictionaryAsync(u => u.Id, u => u.UserName);
+
+            var quizStatisticsModel = new QuizStatisticsModel
+            {
+                Title = quiz.Title,
+                AverageScore = averageScores,
+                ScorePercentage = (averageScores / quiz.TotalScore) * 100,
+                UsersFinished = allQuizAttempts.DistinctBy(aqa => aqa.UserId).Count(),
+                quizSummaryViewModel = new QuizSummaryViewModel
+                {
+                    Score = topUserAttempt.Score,
+                    TotalScore = quiz.TotalScore,
+                    TopPlayerScores = topScores.Select(a => new TopScore
+                    {
+                        UserName = users[a.UserId] ?? "User not found",
+                        PlayerScore = a.Score
+                    }).OrderBy(a => a.PlayerScore).ToList()
+                }
+            };
+
+            return View(quizStatisticsModel);
         }
 
         [HttpGet, ActionName("Create")]
@@ -97,6 +141,7 @@ namespace quiz_project.Controllers
                     Description = quizViewModel.Description,
                     TotalScore = quizViewModel.Questions.Sum(qvm => qvm.QuestionScore),
                     UserId = user!.Id,
+                    IsPublic = false,
                     Questions = quizViewModel.Questions.Select(qvm => new Question
                     {
                         QuestionScore = qvm.QuestionScore,
@@ -170,6 +215,7 @@ namespace quiz_project.Controllers
                     Title = quizViewModel.Title,
                     Description = quizViewModel.Description,
                     UserId = user!.Id,
+                    IsPublic = quizViewModel.IsPublic,
                     TotalScore = quizViewModel.Questions.Sum(qvm => qvm.QuestionScore),
                     Questions = quizViewModel.Questions.Select(qvm => new Question
                     {

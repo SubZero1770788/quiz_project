@@ -22,6 +22,39 @@ namespace quiz_project.Database
             using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+                if (!context.Roles.Any())
+                {
+                    var roles = new List<Role>{
+                        new Role()
+                        {
+                            Id = 1,
+                            Name = "User",
+                            NormalizedName = "USER"
+                        },
+                        new Role()
+                        {
+                            Id = 2,
+                            Name = "Moderator",
+                            NormalizedName = "MODERATOR"
+                        },
+                        new Role()
+                        {
+                            Id = 3,
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        }
+                    };
+
+                    foreach (Role role in roles)
+                    {
+                        await roleManager.CreateAsync(role);
+                    }
+                    await context.SaveChangesAsync();
+                }
+
                 var Users = new List<User>
                 {
                     new User{
@@ -36,12 +69,13 @@ namespace quiz_project.Database
                     },
                 };
 
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
                 foreach (User user in Users)
                 {
                     await userManager.CreateAsync(user, "123123ASD!@#a");
+                    await userManager.AddToRoleAsync(user, "User");
                 }
                 await context.SaveChangesAsync();
+
 
                 var quizes = new List<Quiz>
                 {
@@ -49,12 +83,14 @@ namespace quiz_project.Database
                         QuizId = 1,
                         Title = "My first quiz",
                         Description = "This quiz has no other meaning",
+                        IsPublic = true,
                         UserId = 1
                     },
                     new Quiz{
                         QuizId = 2,
                         Title = "My second quiz",
                         Description = "I did not know I can create more of them !",
+                        IsPublic = false,
                         UserId = 1
                     }
                 };
@@ -567,39 +603,6 @@ namespace quiz_project.Database
 
                 await context.Answers.AddRangeAsync(answers);
                 await context.SaveChangesAsync();
-
-
-                //fix error with roles not seeding
-                if (!context.Roles.Any())
-                {
-                    var roles = new List<Role>{
-                        new Role()
-                        {
-                            Id = 1,
-                            Name = "User",
-                            NormalizedName = "USER"
-                        },
-                        new Role()
-                        {
-                            Id = 2,
-                            Name = "Moderator",
-                            NormalizedName = "MODERATOR"
-                        },
-                        new Role()
-                        {
-                            Id = 3,
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        }
-                    };
-
-                    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
-                    foreach (Role role in roles)
-                    {
-                        await roleManager.CreateAsync(role);
-                    }
-                    await context.SaveChangesAsync();
-                }
 
                 await transaction.CommitAsync();
 

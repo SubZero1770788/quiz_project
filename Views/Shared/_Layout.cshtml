@@ -24,8 +24,12 @@
                         @if (SignInManager.IsSignedIn(User) && User.IsInRole("User"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Quiz"
-                                    asp-action="Index">Quizzes</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="Index">My
+                                    Quizzes</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="Browse">Browse
+                                    Quizzes</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="User"

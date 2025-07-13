@@ -1,3 +1,7 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+
 @foreach (QuizViewModel quizViewModel in @Model)
 {
     <div class="card" style="width: 30rem; margin: 10px;">
@@ -5,6 +9,12 @@
             <div class="row">
                 <h4 class="card-title">@quizViewModel?.Title</h4>
                 <p class="card-text">@quizViewModel?.Description</p>
+                @if (currentAction == "Quiz")
+                {
+                    <p class="card-text">
+                        @(quizViewModel!.IsPublic ? "Quiz is public" : "Quiz is private")
+                    </p>
+                }
             </div>
             <div>
                 <p>Total score: @quizViewModel?.TotalScore</p>
@@ -13,16 +23,23 @@
             <div class="row">
                 <form asp-controller="Quiz" asp-action="Game" method="get" class="col">
                     <input type="hidden" name="QuizId" value="@quizViewModel?.QuizId" />
-                    <button type="submit" class="btn btn-info text-white" style="margin: 2px">Play</button>
+                    <button type="submit" class="btn btn-success text-white" style="margin: 2px">Play</button>
                 </form>
-                <form asp-controller="Quiz" asp-action="Edit" method="get" class="col">
-                    <input type="hidden" name="QuizId" value="@quizViewModel?.QuizId" />
-                    <button type="submit" class="btn btn-warning text-white" style="margin: 2px">Edit</button>
-                </form>
-                <form asp-controller="Quiz" asp-action="Delete" method="post" class="col">
-                    <input type="hidden" name="Id" value="@quizViewModel?.QuizId" />
-                    <button type="submit" class="btn btn-danger text-white" style="margin: 2px">Delete</button>
-                </form>
+                @if (currentAction == "Quiz" || User.IsInRole("Admin"))
+                {
+                    <form asp-controller="Quiz" asp-action="Edit" method="get" class="col">
+                        <input type="hidden" name="QuizId" value="@quizViewModel?.QuizId" />
+                        <button type="submit" class="btn btn-warning text-white" style="margin: 2px">Edit</button>
+                    </form>
+                    <form asp-controller="Quiz" asp-action="Delete" method="post" class="col">
+                        <input type="hidden" name="Id" value="@quizViewModel?.QuizId" />
+                        <button type="submit" class="btn btn-danger text-white" style="margin: 2px">Delete</button>
+                    </form>
+                    <form asp-controller="Quiz" asp-action="Statistics" method="get" class="col">
+                        <input type="hidden" name="Id" value="@quizViewModel?.QuizId" />
+                        <button type="submit" class="btn btn-info text-white" style="margin: 2px">Statistics</button>
+                    </form>
+                }
             </div>
         </div>
     </div>

@@ -10,6 +10,7 @@ namespace quiz_project.Interfaces
     {
         Task<IEnumerable<Quiz>> GetQuizesAsync();
         Task<IEnumerable<Quiz>> GetQuizesByUserAsync(User user);
+        Task<IEnumerable<Quiz>> GetPublicQuizzes();
         Task<Quiz> GetQuizByIdAsync(int quizId);
         Task DeleteQuizAsync(Quiz quiz);
         Task UpdateQuizAsync(Quiz quiz);

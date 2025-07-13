@@ -10,6 +10,27 @@ namespace quiz_project.Entities.Repositories
 {
     public class QuizRepository(QuizDb context) : IQuizRepository
     {
+        public async Task<IEnumerable<Quiz>> GetQuizesByUserAsync(User user)
+        {
+            var quizes = await context.Quizzes.Where(x => x.UserId == user.Id)
+                                        .Include(q => q.Questions).ToListAsync();
+            return quizes;
+        }
+        public async Task<IEnumerable<Quiz>> GetQuizesAsync()
+        {
+            var quizes = await context.Quizzes.ToListAsync();
+            return quizes;
+        }
+        public async Task<IEnumerable<Quiz>> GetPublicQuizzes()
+        {
+            var quizes = await context.Quizzes.Where(q => q.IsPublic == true).Include(q => q.Questions).ToListAsync();
+            return quizes;
+        }
+        public async Task CreateQuizAsync(Quiz quiz)
+        {
+            await context.AddAsync(quiz);
+            await context.SaveChangesAsync();
+        }
         public async Task DeleteQuizAsync(Quiz quiz)
         {
             var oldQuiz = await context.Quizzes.Where(q => q.QuizId == quiz.QuizId).FirstAsync();
@@ -22,25 +43,6 @@ namespace quiz_project.Entities.Repositories
             var quiz = await context.Quizzes.Where(q => q.QuizId == quizId)
                                         .Include(q => q.Questions).ThenInclude(q => q.Answers).FirstAsync();
             return quiz;
-        }
-
-        public async Task<IEnumerable<Quiz>> GetQuizesAsync()
-        {
-            var quizes = await context.Quizzes.ToListAsync();
-            return quizes;
-        }
-
-        public async Task<IEnumerable<Quiz>> GetQuizesByUserAsync(User user)
-        {
-            var quizes = await context.Quizzes.Where(x => x.UserId == user.Id)
-                                        .Include(q => q.Questions).ThenInclude(q => q.Answers).ToListAsync();
-            return quizes;
-        }
-
-        public async Task CreateQuizAsync(Quiz quiz)
-        {
-            await context.AddAsync(quiz);
-            await context.SaveChangesAsync();
         }
 
         public async Task UpdateQuizAsync(Quiz quiz)
