@@ -10,8 +10,8 @@ using quiz_project.Entities;
 using quiz_project.Entities.Repositories;
 using quiz_project.Infrastructure.Repositories;
 using quiz_project.Interfaces;
-using quiz_project.Models;
 using quiz_project.Services;
+using quiz_project.ViewModels;
 using quiz_project.ViewModels.Mappers;
 
 namespace quiz_project.Infrastructure
@@ -22,6 +22,7 @@ namespace quiz_project.Infrastructure
         {
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddSignalR();
 
             // Database connection
             var connection = builder.Configuration.GetConnectionString("DefaultConnection") ??
@@ -59,13 +60,16 @@ namespace quiz_project.Infrastructure
             builder.Services.AddScoped<IQuizRepository, QuizRepository>();
             builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
             builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
+            builder.Services.AddScoped<IOnGoingQuizRepository, OnGoingQuizRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+
             builder.Services.AddScoped<IAccessValidationService, AccessValidationService>();
             builder.Services.AddScoped<IPaginationService<Question>, PaginationService<Question>>();
             builder.Services.AddScoped<IQuizGameService, QuizGameService>();
             builder.Services.AddScoped<IQuizQueryService, QuizQueryService>();
             builder.Services.AddScoped<IQuizService, QuizService>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IOnGoingQuizRepository, OnGoingQuizRepository>();
+
             builder.Services.AddSingleton<IUserMapper, UserMapper>();
             builder.Services.AddSingleton<IQuizMapper, QuizMapper>();
 

@@ -4,16 +4,32 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using quiz_project.Common;
 using quiz_project.Entities;
 using quiz_project.Extensions;
 using quiz_project.Interfaces;
-using quiz_project.Models;
+using quiz_project.ViewModels;
 
 namespace quiz_project.Services
 {
-    public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IUserMapper userMapper, SignInManager<User> signInManager) : IUserService
+    public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager,
+                    IUserMapper userMapper, SignInManager<User> signInManager, IUserRepository userRepository) : IUserService
     {
+        public async Task<List<ActiveUserViewModel>> GetAllActiveUsersAsync()
+        {
+            var users = await userManager.Users.Where(u => u.IsLoggedIn == true).ToListAsync();
+            var scores = await userRepository.GetTotalScoresAsync();
+            List<ActiveUserViewModel> activeUserViewModels = [];
+            users.ForEach(u =>
+            {
+                var userScore = scores.GetValueOrDefault(u.Id, 0);
+                var activeUsers = userMapper.ToActiveUserViewModel(u, userScore);
+                activeUserViewModels.Add(activeUsers);
+            });
+
+            return activeUserViewModels;
+        }
 
         public async Task<(bool, string error)> LoginAsync(LoginViewModel loginViewModel)
         {
@@ -35,8 +51,6 @@ namespace quiz_project.Services
 
             else if (res.Succeeded)
             {
-                user.IsLoggedIn = true;
-                await userManager.UpdateAsync(user);
                 return (true, string.Empty);
             }
 
@@ -57,8 +71,6 @@ namespace quiz_project.Services
             {
                 var userEntity = await userManager.FindByNameAsync(user.Identity.Name);
                 await signInManager.SignOutAsync();
-                userEntity.IsLoggedIn = false;
-                await userManager.UpdateAsync(userEntity);
                 return true;
             }
             return false;
@@ -77,7 +89,6 @@ namespace quiz_project.Services
                 var defaultRole = await roleManager.FindByNameAsync("User");
 
                 await userManager.AddToRoleAsync(user, defaultRole!.Name!);
-                user.IsLoggedIn = true;
                 await userManager.UpdateAsync(user);
                 await signInManager.SignInAsync(user, isPersistent: false);
                 return (true, String.Empty);

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using quiz_project.Entities;
 using quiz_project.Interfaces;
-using quiz_project.Models;
+using quiz_project.ViewModels;
 
 namespace quiz_project.Services
 {

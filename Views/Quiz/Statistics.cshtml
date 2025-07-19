@@ -1,4 +1,4 @@
-@model quiz_project.Models.QuizStatisticsModel
+@model quiz_project.ViewModels.QuizStatisticsModel
 
 <h3>Here's statistics for @Model.Title</h3>
 @{
@@ -26,4 +26,16 @@
             }
         </div>
     </div>
+    @foreach (var question in @Model.quizSummaryViewModel.Questions)
+    {
+        <div class="question">
+            <h5>@question.Description</h5>
+            <ul>
+                @foreach (var answer in question.Answers)
+                {
+                    <li>@answer.Description - Chosen by @answer.SelectedByCount users</li>
+                }
+            </ul>
+        </div>
+    }
 </div>

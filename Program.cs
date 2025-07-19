@@ -1,4 +1,5 @@
 using quiz_project.Database;
+using quiz_project.Hubs;
 using quiz_project.Infrastructure;
 
 var builder = WebApplication.CreateBuilder();
@@ -14,6 +15,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHub<PresenceHub>("/presencehub");
 
 app.MapControllerRoute(
     name: "default",

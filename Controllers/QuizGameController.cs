@@ -12,11 +12,11 @@ using quiz_project.Entities;
 using quiz_project.Entities.Definition;
 using quiz_project.Extensions;
 using quiz_project.Interfaces;
-using quiz_project.Models;
 using quiz_project.RuntimeModels;
 using quiz_project.Services;
-using static quiz_project.Models.QuizSummaryViewModel;
+using quiz_project.ViewModels;
 using static quiz_project.RuntimeModels.QuizMetaData;
+using static quiz_project.ViewModels.QuizSummaryViewModel;
 
 namespace quiz_project.Controllers
 {

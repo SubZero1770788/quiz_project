@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace quiz_project.Models
+namespace quiz_project.ViewModels
 {
     public class QuestionViewModel
     {

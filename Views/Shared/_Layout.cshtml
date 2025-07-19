@@ -9,6 +9,16 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/quiz_project.styles.css" asp-append-version="true" />
 </head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/presencehub")
+            .build();
+
+        connection.start().catch(err => console.error("SignalR connection failed:", err));
+    });
+</script>
 
 <body>
     <header>
@@ -35,32 +45,32 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="User"
                                     asp-action="AccountSettings">Settings</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User"
-                                    asp-action="GetAllActiveUsers">Active users</a>
-                            </li>
                         }
                         @if (SignInManager.IsSignedIn(User) && User.IsInRole("Manager"))
                         {
                             <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="Active">Active
+                                    users</a>
+                            </li>
+                            @* <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Register">View
                                     chats</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Login">Moderate
                                     quizz</a>
-                            </li>
+                            </li> *@
                         }
                         @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
                         {
-                            <li class="nav-item">
+                            @* <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Register">Modify
                                     users</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Login">Admin
                                     panel</a>
-                            </li>
+                            </li> *@
                         }
                     </ul>
                     <ul class="navbar-nav ml-auto">

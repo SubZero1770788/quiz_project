@@ -8,11 +8,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using quiz_project.Entities;
 using quiz_project.Interfaces;
-using quiz_project.Models;
+using quiz_project.Services;
+using quiz_project.ViewModels;
 
 namespace quiz_project.Controllers
 {
-    public class MenuController(IQuizRepository quizRepository, IAccessValidationService accessValidationService, UserManager<User> userManager) : Controller
+    public class MenuController(IQuizRepository quizRepository, IAccessValidationService accessValidationService, UserManager<User> userManager,
+                                IUserService userService) : Controller
     {
         [HttpGet, ActionName("Browse")]
         public async Task<IActionResult> BrowsePublicQuizzes()
@@ -50,7 +52,8 @@ namespace quiz_project.Controllers
         [HttpGet, ActionName("Active")]
         public async Task<IActionResult> GetAllActiveUsers()
         {
-            return View();
+            var users = await userService.GetAllActiveUsersAsync();
+            return View(users);
         }
 
     }

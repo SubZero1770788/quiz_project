@@ -47,21 +47,16 @@ namespace quiz_project.Entities.Repositories
 
         public async Task UpdateQuizAsync(Quiz quiz)
         {
-            // Get old quiz with related questions and answers
             var oldQuiz = await context.Quizzes
                 .Include(q => q.Questions)
                 .ThenInclude(q => q.Answers)
                 .FirstAsync(q => q.QuizId == quiz.QuizId);
 
-            // Update quiz core properties
             context.Entry(oldQuiz).CurrentValues.SetValues(quiz);
-
-            // Remove old nested entities
             context.Answers.RemoveRange(oldQuiz.Questions.SelectMany(q => q.Answers));
             context.Questions.RemoveRange(oldQuiz.Questions);
             await context.SaveChangesAsync();
 
-            // Prepare new questions/answers
             foreach (var question in quiz.Questions)
             {
                 question.QuestionId = 0;
@@ -71,20 +66,31 @@ namespace quiz_project.Entities.Repositories
                 foreach (var answer in question.Answers)
                 {
                     answer.AnswerId = 0;
-                    answer.QuestionId = 0; // EF will assign this after question insert
+                    answer.QuestionId = 0;
                     answer.Question = null;
                 }
             }
-
-            // Add new questions *with* their nested answers
-            context.Questions.AddRange(quiz.Questions); // Will cascade insert answers
-            await context.SaveChangesAsync(); // Only ONE SaveChanges needed
+            context.Questions.AddRange(quiz.Questions);
+            await context.SaveChangesAsync();
         }
 
         public async Task<List<Question>> GetQuestionsByQuizId(int quizId)
         {
             var questions = await context.Questions.Where(q => q.QuizId == quizId).Include(q => q.Answers).ToListAsync();
             return questions;
+        }
+
+        public async Task<Dictionary<(int QuestionId, int AnswerId), int>> GetAnswerSelectionStatsAsync(int quizId)
+        {
+            var answerCounts = await context.AnswerSelections
+                .Where(a => a.QuizAttempt.QuizId == quizId)
+                .GroupBy(a => new { a.QuestionId, a.AnswerId })
+                .ToDictionaryAsync(
+                    g => (g.Key.QuestionId, g.Key.AnswerId),
+                    g => g.Count()
+                );
+
+            return answerCounts;
         }
     }
 }

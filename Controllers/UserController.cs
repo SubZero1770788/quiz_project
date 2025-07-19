@@ -15,7 +15,7 @@ using quiz_project.Database;
 using quiz_project.Entities;
 using quiz_project.Extensions;
 using quiz_project.Interfaces;
-using quiz_project.Models;
+using quiz_project.ViewModels;
 
 namespace quiz_project.Controllers
 {
@@ -31,13 +31,6 @@ namespace quiz_project.Controllers
         public async Task<ViewResult> GetAllUsers()
         {
             var users = await userManager.Users.ToListAsync();
-            return View();
-        }
-
-        [HttpGet]
-        public async Task<ViewResult> GetAllActiveUsers()
-        {
-            var users = await userManager.Users.Where(u => u.IsLoggedIn == true).ToListAsync();
             return View();
         }
 
@@ -83,7 +76,7 @@ namespace quiz_project.Controllers
                 {
                     ModelState.AddModelError(string.Empty, error);
                     return RedirectToAction("Index", "Quiz");
-                }    
+                }
                 return RedirectToAction("Index", "Quiz");
             }
 

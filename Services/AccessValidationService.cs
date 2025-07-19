@@ -11,11 +11,11 @@ using quiz_project.Entities;
 using quiz_project.Entities.Repositories;
 using quiz_project.Extensions;
 using quiz_project.Interfaces;
-using quiz_project.Models;
+using quiz_project.ViewModels;
 
 namespace quiz_project.Services
 {
-    public class AccessValidationService( IQuizRepository quizRepository) : IAccessValidationService
+    public class AccessValidationService(IQuizRepository quizRepository) : IAccessValidationService
     {
         public List<string> EachQuestionHasAnswer(QuizViewModel quizViewModel)
         {

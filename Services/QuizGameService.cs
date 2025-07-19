@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using quiz_project.Entities;
 using quiz_project.Interfaces;
-using quiz_project.Models;
-using static quiz_project.Models.QuizSummaryViewModel;
+using quiz_project.ViewModels;
+using static quiz_project.ViewModels.QuizSummaryViewModel;
 
 namespace quiz_project.Services
 {

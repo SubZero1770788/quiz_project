@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace quiz_project.Models
+namespace quiz_project.ViewModels
 {
     public class RegisterViewModel
     {

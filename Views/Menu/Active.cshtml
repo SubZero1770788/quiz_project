@@ -1,0 +1,12 @@
+@model List<ActiveUserViewModel>
+
+<div>
+    Active users
+</div>
+@foreach (var user in @Model)
+{
+    <div>
+        @user.UserName
+        | Score: @user.TotalScore
+    </div>
+}

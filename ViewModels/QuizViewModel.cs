@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using quiz_project.Entities;
 
-namespace quiz_project.Models
+namespace quiz_project.ViewModels
 {
     public class QuizViewModel
     {

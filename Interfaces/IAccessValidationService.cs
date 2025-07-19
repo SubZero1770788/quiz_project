@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using quiz_project.Entities;
-using quiz_project.Models;
+using quiz_project.ViewModels;
 
 namespace quiz_project.Interfaces
 {

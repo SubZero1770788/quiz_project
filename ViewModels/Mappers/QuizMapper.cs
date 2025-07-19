@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using quiz_project.Entities;
 using quiz_project.Interfaces;
-using quiz_project.Models;
-using static quiz_project.Models.QuizSummaryViewModel;
+using quiz_project.ViewModels;
+using static quiz_project.ViewModels.QuizSummaryViewModel;
 
 namespace quiz_project.ViewModels.Mappers
 {
@@ -37,7 +37,8 @@ namespace quiz_project.ViewModels.Mappers
         }
 
         public QuizStatisticsModel ToQuizStatisticsModel(Quiz quiz, double averageScores, IEnumerable<QuizAttempt> allQuizAttempts,
-                                QuizAttempt topUserAttempt, List<QuizAttempt> topScores, Dictionary<int, string> users)
+                                QuizAttempt topUserAttempt, List<QuizAttempt> topScores,
+                                Dictionary<int, string> users, Dictionary<(int QuestionId, int AnswerId), int>? answerCounts)
         {
 
             var quizStatisticsModel = new QuizStatisticsModel
@@ -54,7 +55,19 @@ namespace quiz_project.ViewModels.Mappers
                     {
                         UserName = users[a.UserId] ?? "User not found",
                         PlayerScore = a.Score
-                    }).OrderBy(a => a.PlayerScore).ToList()
+                    }).OrderBy(a => a.PlayerScore).ToList(),
+
+                    Questions = quiz.Questions.Select(q => new QuizSummaryViewModel.QuestionStats
+                    {
+                        QuestionId = q.QuestionId,
+                        Description = q.Description,
+                        Answers = q.Answers.Select(a => new QuizSummaryViewModel.AnswerStats
+                        {
+                            AnswerId = a.AnswerId,
+                            Description = a.Description,
+                            SelectedByCount = answerCounts?.GetValueOrDefault((q.QuestionId, a.AnswerId)) ?? 0
+                        }).ToList()
+                    }).ToList()
                 }
             };
 

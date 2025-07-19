@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using quiz_project.Entities;
 using quiz_project.Interfaces;
-using quiz_project.Models;
-using static quiz_project.Models.QuizSummaryViewModel;
+using quiz_project.ViewModels;
+using static quiz_project.ViewModels.QuizSummaryViewModel;
 
 namespace quiz_project.Services
 {
@@ -27,8 +27,11 @@ namespace quiz_project.Services
             var topUserAttempt = await attemptRepository.GetTopUserAttemptAsync(userId, quiz.QuizId);
             var topScores = allQuizAttempts.OrderBy(aqa => aqa.Score).Take(10).ToList();
             var users = await userManager.Users.ToDictionaryAsync(u => u.Id, u => u.UserName);
+            var answerCounts = await quizRepository.GetAnswerSelectionStatsAsync(quizId);
 
-            var quizStatisticsModel = quizMapper.ToQuizStatisticsModel(quiz, averageScores, allQuizAttempts, topUserAttempt, topScores, users);
+            var quizStatisticsModel = quizMapper.ToQuizStatisticsModel(
+                quiz, averageScores, allQuizAttempts, topUserAttempt, topScores, users, answerCounts
+            );
             return (true, quizStatisticsModel);
         }
 
