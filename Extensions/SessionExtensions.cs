@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using quiz_project.Helpers;
-using static quiz_project.Helpers.QuizMetaData;
+using quiz_project.RuntimeModels;
+using static quiz_project.RuntimeModels.QuizMetaData;
+
 
 namespace quiz_project.Extensions
 {

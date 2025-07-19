@@ -9,7 +9,7 @@ namespace quiz_project.Interfaces
     public interface IQuizRepository
     {
         Task<IEnumerable<Quiz>> GetQuizesAsync();
-        Task<IEnumerable<Quiz>> GetQuizesByUserAsync(User user);
+        Task<IEnumerable<Quiz>> GetQuizesByUserAsync(int userId);
         Task<IEnumerable<Quiz>> GetPublicQuizzes();
         Task<Quiz> GetQuizByIdAsync(int quizId);
         Task DeleteQuizAsync(Quiz quiz);

@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static quiz_project.Helpers.QuizMetaData;
 
-namespace quiz_project.Helpers
+namespace quiz_project.RuntimeModels
 {
     public class QuizMetaData
     {

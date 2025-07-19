@@ -1,5 +1,5 @@
 using quiz_project.Database;
-using quiz_project.Helpers;
+using quiz_project.Infrastructure;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -14,8 +14,6 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

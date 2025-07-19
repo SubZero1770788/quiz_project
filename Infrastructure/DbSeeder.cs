@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using quiz_project.Database;
 using quiz_project.Entities;
 
-namespace quiz_project.Database
+namespace quiz_project.Infrastructure
 {
     public static class DbSeeder
     {
@@ -84,14 +85,16 @@ namespace quiz_project.Database
                         Title = "My first quiz",
                         Description = "This quiz has no other meaning",
                         IsPublic = true,
-                        UserId = 1
+                        UserId = 1,
+                        TotalScore = 200
                     },
                     new Quiz{
                         QuizId = 2,
                         Title = "My second quiz",
                         Description = "I did not know I can create more of them !",
                         IsPublic = false,
-                        UserId = 1
+                        UserId = 1,
+                        TotalScore = 0
                     }
                 };
 

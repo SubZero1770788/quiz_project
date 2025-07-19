@@ -10,9 +10,9 @@ namespace quiz_project.Entities.Repositories
 {
     public class QuizRepository(QuizDb context) : IQuizRepository
     {
-        public async Task<IEnumerable<Quiz>> GetQuizesByUserAsync(User user)
+        public async Task<IEnumerable<Quiz>> GetQuizesByUserAsync(int userId)
         {
-            var quizes = await context.Quizzes.Where(x => x.UserId == user.Id)
+            var quizes = await context.Quizzes.Where(x => x.UserId == userId)
                                         .Include(q => q.Questions).ToListAsync();
             return quizes;
         }
@@ -47,12 +47,38 @@ namespace quiz_project.Entities.Repositories
 
         public async Task UpdateQuizAsync(Quiz quiz)
         {
-            var oldQuiz = await context.Quizzes.Where(q => q.QuizId == quiz.QuizId).FirstAsync();
-            context.Quizzes.Remove(oldQuiz);
+            // Get old quiz with related questions and answers
+            var oldQuiz = await context.Quizzes
+                .Include(q => q.Questions)
+                .ThenInclude(q => q.Answers)
+                .FirstAsync(q => q.QuizId == quiz.QuizId);
+
+            // Update quiz core properties
+            context.Entry(oldQuiz).CurrentValues.SetValues(quiz);
+
+            // Remove old nested entities
+            context.Answers.RemoveRange(oldQuiz.Questions.SelectMany(q => q.Answers));
+            context.Questions.RemoveRange(oldQuiz.Questions);
             await context.SaveChangesAsync();
 
-            var res = await context.Quizzes.AddAsync(quiz);
-            await context.SaveChangesAsync();
+            // Prepare new questions/answers
+            foreach (var question in quiz.Questions)
+            {
+                question.QuestionId = 0;
+                question.QuizId = quiz.QuizId;
+                question.Quiz = null;
+
+                foreach (var answer in question.Answers)
+                {
+                    answer.AnswerId = 0;
+                    answer.QuestionId = 0; // EF will assign this after question insert
+                    answer.Question = null;
+                }
+            }
+
+            // Add new questions *with* their nested answers
+            context.Questions.AddRange(quiz.Questions); // Will cascade insert answers
+            await context.SaveChangesAsync(); // Only ONE SaveChanges needed
         }
 
         public async Task<List<Question>> GetQuestionsByQuizId(int quizId)

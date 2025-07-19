@@ -16,44 +16,23 @@ using quiz_project.Entities;
 using quiz_project.Entities.Repositories;
 using quiz_project.Interfaces;
 using quiz_project.Models;
+using quiz_project.Services;
 using static quiz_project.Models.QuizSummaryViewModel;
 
 namespace quiz_project.Controllers
 {
 
     public class QuizController(IQuizRepository quizRepository, IAccessValidationService accessValidationService,
-                                    IAttemptRepository attemptRepository, UserManager<User> userManager) : Controller
+                                 UserManager<User> userManager, IQuizService quizService, IQuizGameService quizGameService,
+                                 IQuizQueryService quizQueryService) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-            if (redirect is not null) return redirect;
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
 
-            var quizes = await quizRepository.GetQuizesByUserAsync(user!);
-
-            var quizViewModels = new List<QuizViewModel>();
-            foreach (Quiz q in quizes)
-            {
-                var quizViewModel = new QuizViewModel
-                {
-                    QuizId = q!.QuizId,
-                    Title = q.Title,
-                    Description = q.Description,
-                    IsPublic = q.IsPublic,
-                    Questions = q.Questions.Select(qvm => new QuestionViewModel
-                    {
-                        QuestionScore = qvm.QuestionScore,
-                        Description = qvm.Description,
-                        Answers = qvm.Answers.Select(avm => new AnswerViewModel
-                        {
-                            Description = avm.Description,
-                            IsCorrect = avm.IsCorrect
-                        }).ToList()
-                    }).ToList()
-                };
-                quizViewModels.Add(quizViewModel);
-            }
+            var quizViewModels = await quizQueryService.GetUserQuizzesAsync(user.Id);
 
             return View(quizViewModels);
         }
@@ -61,8 +40,8 @@ namespace quiz_project.Controllers
         [HttpGet]
         public async Task<IActionResult> GetQuizAsync(int quizId)
         {
-            var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-            if (user is null) return redirect!;
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
 
             var quiz = await quizRepository.GetQuizByIdAsync(quizId);
             var quizModel = new QuizViewModel
@@ -77,38 +56,14 @@ namespace quiz_project.Controllers
         [HttpGet, ActionName("Statistics")]
         public async Task<IActionResult> CheckQuizStats(int Id)
         {
-            var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-            if (user is null) return redirect!;
-            var (quiz, quizRedirect) = await accessValidationService.GetUserOwnsQuiz(Id, user!, this);
-            if (quiz is null) return quizRedirect!;
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+            var owns = await accessValidationService.UserOwnsQuizAsync(Id, user);
+            if (!owns) return RedirectToAction("Index")!;
 
-            var allQuizAttempts = await attemptRepository.GetAllAttemptsAsync(quiz.QuizId);
-            if (allQuizAttempts.Count() == 0)
-            {
-                return View("ZeroAttempts");
-            }
-            var averageScores = allQuizAttempts.Average(aqa => aqa.Score);
-            var topUserAttempt = await attemptRepository.GetTopUserAttemptAsync(user.Id, quiz.QuizId);
-            var topScores = allQuizAttempts.OrderBy(aqa => aqa.Score).Take(10).ToList();
-            var users = await userManager.Users.ToDictionaryAsync(u => u.Id, u => u.UserName);
+            var (success, quizStatisticsModel) = await quizQueryService.GetQuizStatisticsAsync(Id, user.Id);
+            if (!success) return View("ZeroAttempts");
 
-            var quizStatisticsModel = new QuizStatisticsModel
-            {
-                Title = quiz.Title,
-                AverageScore = averageScores,
-                ScorePercentage = (averageScores / quiz.TotalScore) * 100,
-                UsersFinished = allQuizAttempts.DistinctBy(aqa => aqa.UserId).Count(),
-                quizSummaryViewModel = new QuizSummaryViewModel
-                {
-                    Score = topUserAttempt.Score,
-                    TotalScore = quiz.TotalScore,
-                    TopPlayerScores = topScores.Select(a => new TopScore
-                    {
-                        UserName = users[a.UserId] ?? "User not found",
-                        PlayerScore = a.Score
-                    }).OrderBy(a => a.PlayerScore).ToList()
-                }
-            };
 
             return View(quizStatisticsModel);
         }
@@ -116,11 +71,8 @@ namespace quiz_project.Controllers
         [HttpGet, ActionName("Create")]
         public async Task<IActionResult> CreateNewQuizAsync()
         {
-            var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-            if (user is null) return redirect!;
-
-            if (user is null)
-                return RedirectToAction("Index", "Home");
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
 
             return View();
         }
@@ -130,33 +82,12 @@ namespace quiz_project.Controllers
         {
             if (ModelState.IsValid)
             {
-                var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-                if (user is null) return redirect!;
-                var hasAll = accessValidationService.EachQuestionHasAnswer(quizViewModel, ModelState, this);
-                if (hasAll is false) return View(quizViewModel)!;
-
-                var quiz = new Quiz
-                {
-                    Title = quizViewModel.Title,
-                    Description = quizViewModel.Description,
-                    TotalScore = quizViewModel.Questions.Sum(qvm => qvm.QuestionScore),
-                    UserId = user!.Id,
-                    IsPublic = false,
-                    Questions = quizViewModel.Questions.Select(qvm => new Question
-                    {
-                        QuestionScore = qvm.QuestionScore,
-                        Description = qvm.Description,
-                        Answers = qvm.Answers.Select(avm => new Answer
-                        {
-                            Description = avm.Description,
-                            IsCorrect = avm.IsCorrect
-                        }).ToList()
-                    }).ToList()
-                };
+                var user = await userManager.GetUserAsync(User);
+                if (user is null) return RedirectToAction("Register", "User")!;
 
                 try
                 {
-                    await quizRepository.CreateQuizAsync(quiz);
+                    await quizService.CreateAsync(quizViewModel, user.Id);
                 }
                 catch (Exception e)
                 {
@@ -165,34 +96,18 @@ namespace quiz_project.Controllers
 
                 return RedirectToAction("Index");
             }
-            // After adding did not work
             return View(quizViewModel);
         }
 
         [HttpGet, ActionName("Edit")]
         public async Task<IActionResult> EditQuizAsync(int quizId)
         {
-            var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-            if (user is null) return redirect!;
-            var (quiz, quizRedirect) = await accessValidationService.GetUserOwnsQuiz(quizId, user!, this);
-            if (quiz is null) return quizRedirect!;
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+            var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
+            if (!owns) return RedirectToAction("Index")!;
 
-            var quizViewModel = new QuizViewModel
-            {
-                QuizId = quiz!.QuizId,
-                Title = quiz.Title,
-                Description = quiz.Description,
-                Questions = quiz.Questions.Select(qvm => new QuestionViewModel
-                {
-                    QuestionScore = qvm.QuestionScore,
-                    Description = qvm.Description,
-                    Answers = qvm.Answers.Select(avm => new AnswerViewModel
-                    {
-                        Description = avm.Description,
-                        IsCorrect = avm.IsCorrect
-                    }).ToList()
-                }).ToList()
-            };
+            var quizViewModel = await quizService.GetEditAsync(quizId);
 
             return View(quizViewModel);
         }
@@ -202,58 +117,39 @@ namespace quiz_project.Controllers
         {
             if (ModelState.IsValid)
             {
-                var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-                if (user is null) return redirect!;
-                var (quiz, quizRedirect) = await accessValidationService.GetUserOwnsQuiz(quizViewModel.QuizId, user!, this);
-                if (quiz is null) return quizRedirect!;
-                var hasAll = accessValidationService.EachQuestionHasAnswer(quizViewModel, ModelState, this);
-                if (hasAll is false) return View(quizViewModel)!;
+                var user = await userManager.GetUserAsync(User);
+                if (user is null) return RedirectToAction("Register", "User")!;
+                var owns = await accessValidationService.UserOwnsQuizAsync(quizViewModel.QuizId, user);
+                if (!owns) return RedirectToAction("Index")!;
 
-                var Quiz = new Quiz()
+                var (success, errors) = await quizService.PostEditAsync(quizViewModel, user.Id);
+
+                if (!success)
                 {
-                    QuizId = quizViewModel.QuizId,
-                    Title = quizViewModel.Title,
-                    Description = quizViewModel.Description,
-                    UserId = user!.Id,
-                    IsPublic = quizViewModel.IsPublic,
-                    TotalScore = quizViewModel.Questions.Sum(qvm => qvm.QuestionScore),
-                    Questions = quizViewModel.Questions.Select(qvm => new Question
+                    foreach (var er in errors)
                     {
-                        QuestionScore = qvm.QuestionScore,
-                        Description = qvm.Description,
-                        Answers = qvm.Answers.Select(avm => new Answer
-                        {
-                            Description = avm.Description,
-                            IsCorrect = avm.IsCorrect
-                        }).ToList()
-                    }).ToList()
-                };
+                        ModelState.AddModelError(String.Empty, er);
+                    }
+                    return View(quizViewModel);
+                }
 
-                try
-                {
-                    await quizRepository.UpdateQuizAsync(Quiz);
-                }
-                catch (Exception e)
-                {
-                    ModelState.AddModelError(String.Empty, $"Something went wrong: {e}");
-                }
+                return RedirectToAction("Index");
+
             }
-            ;
-
-            return RedirectToAction("Index");
+            return RedirectToAction("Edit");
         }
 
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteQuizAsync(int Id)
         {
-            var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-            if (user is null) return redirect!;
-            var (quiz, quizRedirect) = await accessValidationService.GetUserOwnsQuiz(Id, user!, this);
-            if (quiz is null) return quizRedirect!;
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+            var owns = await accessValidationService.UserOwnsQuizAsync(Id, user);
+            if (!owns) return RedirectToAction("Index")!;
 
             try
             {
-                await quizRepository.DeleteQuizAsync(quiz);
+                await quizService.DeleteAsync(Id);
             }
             catch (Exception e)
             {
@@ -266,27 +162,12 @@ namespace quiz_project.Controllers
         [HttpGet, ActionName("Game")]
         public async Task<IActionResult> LaunchQuizAsync(int quizId)
         {
-            var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-            if (user is null) return redirect!;
-            var (quiz, quizRedirect) = await accessValidationService.GetUserOwnsQuiz(quizId, user!, this);
-            if (quiz is null) return quizRedirect!;
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
+            var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
+            if (!owns) return RedirectToAction("Index")!;
 
-            var quizViewModel = new QuizViewModel
-            {
-                QuizId = quiz.QuizId,
-                Title = quiz.Title,
-                Description = quiz.Description,
-                Questions = quiz.Questions.Select(qvm => new QuestionViewModel
-                {
-                    QuestionScore = qvm.QuestionScore,
-                    Description = qvm.Description,
-                    Answers = qvm.Answers.Select(avm => new AnswerViewModel
-                    {
-                        Description = avm.Description,
-                        IsCorrect = avm.IsCorrect
-                    }).ToList()
-                }).ToList()
-            };
+            var quizViewModel = await quizGameService.LaunchQuizAsync(quizId);
 
             return View(quizViewModel);
         }

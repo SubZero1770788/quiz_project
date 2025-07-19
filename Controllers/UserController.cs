@@ -20,7 +20,7 @@ using quiz_project.Models;
 namespace quiz_project.Controllers
 {
     public class UserController(QuizDb context, SignInManager<User> signInManager,
-        UserManager<User> userManager, RoleManager<Role> roleManager) : Controller
+        UserManager<User> userManager, IUserService userService) : Controller
     {
         [HttpGet]
         public async Task<ViewResult> Index()
@@ -59,37 +59,8 @@ namespace quiz_project.Controllers
         {
             if (ModelState.IsValid)
             {
-                var userNameTaken = await userManager.FindByNameAsync(registerViewModel.UserName);
-                if (userNameTaken is not null)
-                {
-                    ModelState.AddModelError(string.Empty, "The username is already taken");
-                    return View(registerViewModel);
-                }
-
-                var user = new User()
-                {
-                    UserName = registerViewModel.UserName,
-                    Email = registerViewModel.Email
-                };
-
-                var created = await userManager.CreateAsync(user, registerViewModel.Password);
-                if (created.Succeeded)
-                {
-                    var defaultRole = await roleManager.FindByNameAsync("User");
-
-                    await userManager.AddToRoleAsync(user, defaultRole!.Name!);
-                    user.IsLoggedIn = true;
-                    await userManager.UpdateAsync(user);
-                    await context.SaveChangesAsync();
-                    await signInManager.SignInAsync(user, isPersistent: false);
-                    HttpContext.Session.SetString("UserName", user.UserName);
-
-                    return RedirectToAction("Index", "Quiz");
-                }
-
-                foreach (var error in created.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
-
+                var (success, error) = await userService.RegisterAsync(registerViewModel);
+                return RedirectToAction("Index", "Quiz");
             }
 
             return View(registerViewModel);
@@ -107,38 +78,13 @@ namespace quiz_project.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await userManager.FindByNameAsync(loginViewModel.UserName);
-                if (user is null)
+                var (success, error) = await userService.LoginAsync(loginViewModel);
+                if (!success)
                 {
-                    ModelState.AddModelError(string.Empty, ErrorMessagesExtension.GetMessage(ErrorMessages.InvalidLoginAttempt));
-                    return View(loginViewModel);
-                }
-
-                var res = await signInManager.PasswordSignInAsync(loginViewModel.UserName, loginViewModel.Password, isPersistent: false, lockoutOnFailure: true);
-
-                if (res.IsLockedOut)
-                {
-                    ModelState.AddModelError(string.Empty, ErrorMessagesExtension.GetMessage(ErrorMessages.AccountLocked));
-                    return View(loginViewModel);
-                }
-
-                else if (res.Succeeded)
-                {
-                    user.IsLoggedIn = true;
-                    await userManager.UpdateAsync(user);
-                    await context.SaveChangesAsync();
-                    HttpContext.Session.SetString("UserName", loginViewModel.UserName);
+                    ModelState.AddModelError(string.Empty, error);
                     return RedirectToAction("Index", "Quiz");
-                }
-
-                await userManager.AccessFailedAsync(user);
-
-                var accessfailed = await userManager.GetAccessFailedCountAsync(user);
-                var maxFailedAttempts = userManager.Options.Lockout.MaxFailedAccessAttempts;
-                int leftAttempts = maxFailedAttempts - accessfailed;
-
-                ModelState.AddModelError(string.Empty, $"Invalid login attempt. {leftAttempts} left before account lockout.");
-                return View(loginViewModel);
+                }    
+                return RedirectToAction("Index", "Quiz");
             }
 
             return View(loginViewModel);
@@ -147,15 +93,7 @@ namespace quiz_project.Controllers
         [HttpGet]
         public async Task<RedirectToActionResult> Logout()
         {
-            var username = HttpContext.Session.GetString("UserName");
-            if (username is not null)
-            {
-                var user = await userManager.FindByNameAsync(username!);
-                await signInManager.SignOutAsync();
-                user.IsLoggedIn = false;
-                await userManager.UpdateAsync(user);
-                await context.SaveChangesAsync();
-            }
+            await userService.LogoutAsync(User);
             return RedirectToAction("Index", "Home");
         }
     }

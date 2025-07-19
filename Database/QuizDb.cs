@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using quiz_project.Entities;
+using quiz_project.Entities.Definition;
 
 namespace quiz_project.Database
 {
@@ -33,7 +34,7 @@ namespace quiz_project.Database
                 en.HasMany(q => q.Questions)
                 .WithOne(qu => qu.Quiz)
                 .HasForeignKey(qu => qu.QuizId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
             });
 
             mb.Entity<Question>(en =>
@@ -43,7 +44,7 @@ namespace quiz_project.Database
                 en.HasMany(qu => qu.Answers)
                 .WithOne(a => a.Question)
                 .HasForeignKey(a => a.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
             });
 
             mb.Entity<Answer>(a =>
@@ -94,6 +95,46 @@ namespace quiz_project.Database
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            mb.Entity<OnGoingQuizState>(ogqs =>
+            {
+                ogqs.HasKey(ogqs => ogqs.Id);
+
+                ogqs.HasOne(ogqs => ogqs.Quiz)
+                    .WithMany()
+                    .HasForeignKey(ogqs => ogqs.QuizId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                ogqs.HasOne(ogqs => ogqs.User)
+                    .WithMany()
+                    .HasForeignKey(ogqs => ogqs.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                ogqs.HasMany(ogqs => ogqs.Answers)
+                    .WithOne(anss => anss.OnGoingQuizState)
+                    .HasForeignKey(anss => anss.OnGoingQuizStateId);
+            });
+
+            mb.Entity<AnswerState>(anss =>
+            {
+                anss.HasKey(anss => anss.Id);
+
+                anss.HasOne(anss => anss.Question)
+                    .WithMany()
+                    .HasForeignKey(anss => anss.QuestionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                anss.HasOne(anss => anss.OnGoingQuizState)
+                    .WithMany()
+                    .HasForeignKey(anss => anss.OnGoingQuizStateId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                anss.Property(e => e.AnswersId)
+                    .HasConversion(
+                        v => string.Join(',', v),
+                        v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList()
+                    );
+            });
+
             base.OnModelCreating(mb);
             mb.ApplyConfiguration(new RoleConfiguration());
         }
@@ -104,5 +145,7 @@ namespace quiz_project.Database
         public DbSet<Answer> Answers { get; set; }
         public DbSet<QuizAttempt> QuizAttempts { get; set; }
         public DbSet<AnswerSelection> AnswerSelections { get; set; }
+        public DbSet<OnGoingQuizState> OnGoingQuizStates { get; set; }
+        public DbSet<AnswerState> AnswerStates { get; set; }
     }
 }

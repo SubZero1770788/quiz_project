@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using quiz_project.Entities;
@@ -11,13 +12,13 @@ using quiz_project.Models;
 
 namespace quiz_project.Controllers
 {
-    public class MenuController(IQuizRepository quizRepository, IAccessValidationService accessValidationService) : Controller
+    public class MenuController(IQuizRepository quizRepository, IAccessValidationService accessValidationService, UserManager<User> userManager) : Controller
     {
         [HttpGet, ActionName("Browse")]
         public async Task<IActionResult> BrowsePublicQuizzes()
         {
-            var (user, redirect) = await accessValidationService.GetCurrentUserOrRedirect(this);
-            if (user is null) return redirect!;
+            var user = await userManager.GetUserAsync(User);
+            if (user is null) return RedirectToAction("Register", "User")!;
 
             var quizes = await quizRepository.GetPublicQuizzes();
 
@@ -44,6 +45,12 @@ namespace quiz_project.Controllers
             }
 
             return View(quizViewModels);
+        }
+
+        [HttpGet, ActionName("Active")]
+        public async Task<IActionResult> GetAllActiveUsers()
+        {
+            return View();
         }
 
     }

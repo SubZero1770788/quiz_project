@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using quiz_project.Common;
 using quiz_project.Entities;
 using quiz_project.Entities.Repositories;
@@ -13,58 +15,23 @@ using quiz_project.Models;
 
 namespace quiz_project.Services
 {
-    public class AccessValidationService(UserManager<User> userManager, IQuizRepository quizRepository) : IAccessValidationService
+    public class AccessValidationService( IQuizRepository quizRepository) : IAccessValidationService
     {
-        public Boolean EachQuestionHasAnswer(QuizViewModel quizViewModel, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary ModelState, Controller controller)
+        public List<string> EachQuestionHasAnswer(QuizViewModel quizViewModel)
         {
-            bool allCorrect = true;
+            var errors = new List<string>();
             for (int i = 0; i < quizViewModel.Questions.Count; i++)
             {
-                var qvm = quizViewModel.Questions[i];
-
-                if (!qvm.Answers.Any(a => a.IsCorrect))
-                {
-                    ModelState.AddModelError($"Questions[{i}].Answers", $"Question {i + 1} must have at least one correct answer.");
-                    allCorrect = false;
-                }
+                if (!quizViewModel.Questions[i].Answers.Any(a => a.IsCorrect))
+                    errors.Add($"Questions[{i}].Answers : Question {i + 1} must have at least one correct answer.");
             }
-            if (!allCorrect)
-                return (false);
-            return (true);
+            return errors;
         }
 
-        public async Task<(User? user, IActionResult? redirect)> GetCurrentUserOrRedirect(Controller controller)
-        {
-            var username = controller.HttpContext.Session.GetString("UserName");
-
-            if (username is null)
-            {
-                controller.ModelState.AddModelError(string.Empty, ErrorMessagesExtension.GetMessage(ErrorMessages.WrongSession));
-                return (null, controller.RedirectToAction("Index", "Quiz"));
-            }
-
-            var user = await userManager.FindByNameAsync(username!);
-
-            if (user is null)
-            {
-                controller.ModelState.AddModelError(string.Empty, ErrorMessagesExtension.GetMessage(ErrorMessages.UserNotExisting));
-                return (null, controller.RedirectToAction("User", "Logout"));
-            }
-
-            return (user, null);
-        }
-
-        public async Task<(Quiz? quiz, IActionResult? redirect)> GetUserOwnsQuiz(int id, User user, Controller controller)
+        public async Task<bool> UserOwnsQuizAsync(int id, User user)
         {
             var quiz = await quizRepository.GetQuizByIdAsync(id);
-
-            if (quiz.UserId != user!.Id)
-            {
-                controller.ModelState.AddModelError(String.Empty, "This quiz does not belong to you");
-                return (null, controller.RedirectToAction("Index"));
-            }
-
-            return (quiz, null);
+            return quiz != null && quiz.UserId == user.Id;
         }
 
     }

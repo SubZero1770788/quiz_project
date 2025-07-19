@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace quiz_project.Helpers
+namespace quiz_project.Infrastructure
 {
     public class PaginatedList<T> : List<T>
     {
