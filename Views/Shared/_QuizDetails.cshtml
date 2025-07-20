@@ -2,45 +2,49 @@
     var currentAction = ViewContext.RouteData.Values["controller"]?.ToString();
 }
 
-@foreach (QuizViewModel quizViewModel in @Model)
-{
-    <div class="card" style="width: 30rem; margin: 10px;">
-        <div class="card-body">
-            <div class="row">
-                <h4 class="card-title">@quizViewModel?.Title</h4>
-                <p class="card-text">@quizViewModel?.Description</p>
-                @if (currentAction == "Quiz")
-                {
-                    <p class="card-text">
-                        @(quizViewModel!.IsPublic ? "Quiz is public" : "Quiz is private")
-                    </p>
-                }
+<div class="quiz-grid">
+    @foreach (QuizViewModel quizViewModel in Model)
+    {
+        <div class="quiz-card">
+            <div class="quiz-title">@quizViewModel?.Title</div>
+            <div class="quiz-description">@quizViewModel?.Description</div>
+
+            @if (currentAction == "Quiz")
+            {
+                <div class="quiz-meta">
+                    @(quizViewModel!.IsPublic ? "Quiz is public" : "Quiz is private")
+                </div>
+            }
+
+            <div class="quiz-meta">
+                Total score: @quizViewModel?.TotalScore<br />
+                Questions count: @quizViewModel?.QuestionCount
             </div>
-            <div>
-                <p>Total score: @quizViewModel?.TotalScore</p>
-                <p>Questions count: @quizViewModel?.QuestionCount</p>
-            </div>
-            <div class="row">
-                <form asp-controller="Quiz" asp-action="Game" method="get" class="col">
+
+            <div class="quiz-buttons no-wrap-buttons">
+                <form asp-controller="Quiz" asp-action="Game" method="get">
                     <input type="hidden" name="QuizId" value="@quizViewModel?.QuizId" />
-                    <button type="submit" class="btn btn-success text-white" style="margin: 2px">Play</button>
+                    <button type="submit" class="btn btn-success text-white">Play</button>
                 </form>
+
                 @if (currentAction == "Quiz" || User.IsInRole("Admin"))
                 {
-                    <form asp-controller="Quiz" asp-action="Edit" method="get" class="col">
+                    <form asp-controller="Quiz" asp-action="Edit" method="get">
                         <input type="hidden" name="QuizId" value="@quizViewModel?.QuizId" />
-                        <button type="submit" class="btn btn-warning text-white" style="margin: 2px">Edit</button>
+                        <button type="submit" class="btn btn-warning text-white">Edit</button>
                     </form>
-                    <form asp-controller="Quiz" asp-action="Delete" method="post" class="col">
+
+                    <form asp-controller="Quiz" asp-action="Delete" method="post">
                         <input type="hidden" name="Id" value="@quizViewModel?.QuizId" />
-                        <button type="submit" class="btn btn-danger text-white" style="margin: 2px">Delete</button>
+                        <button type="submit" class="btn btn-danger text-white">Delete</button>
                     </form>
-                    <form asp-controller="Quiz" asp-action="Statistics" method="get" class="col">
+
+                    <form asp-controller="Quiz" asp-action="Statistics" method="get">
                         <input type="hidden" name="Id" value="@quizViewModel?.QuizId" />
-                        <button type="submit" class="btn btn-info text-white" style="margin: 2px">Statistics</button>
+                        <button type="submit" class="btn btn-info text-white">Statistics</button>
                     </form>
                 }
             </div>
         </div>
-    </div>
-}
+    }
+</div>

@@ -14,14 +14,18 @@ namespace quiz_project.Services
 {
     public class QuizGameService(IQuizRepository quizRepository, UserManager<User> userManager, IQuizMapper quizMapper,
                                     IOnGoingQuizRepository onGoingQuizRepository, IAttemptRepository attemptRepository,
-                                    IAccessValidationService accessValidationService) : IQuizGameService
+                                    IAccessValidationService accessValidationService, IQuizQueryService quizQueryService) : IQuizGameService
     {
         public async Task<(bool, QuizSummaryViewModel?)> AttemptSummary(int quizId, User user)
         {
             var quizMetaData = await onGoingQuizRepository.GetAsync(user.Id, quizId);
+            var userRole = await userManager.GetRolesAsync(user);
 
-            var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
-            if (!owns) return (false, null);
+            if (!await quizQueryService.CheckIfPublicAsync(quizId) && !userRole.Contains("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
+                if (!owns) return (false, null);
+            }
 
             var allQuizAttempts = await attemptRepository.GetAllAttemptsAsync(quizId);
             var quizDefinition = await quizRepository.GetQuizByIdAsync(quizId);

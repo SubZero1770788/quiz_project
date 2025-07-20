@@ -34,7 +34,7 @@ namespace quiz_project.Database
                 en.HasMany(q => q.Questions)
                 .WithOne(qu => qu.Quiz)
                 .HasForeignKey(qu => qu.QuizId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
             });
 
             mb.Entity<Question>(en =>
@@ -44,7 +44,7 @@ namespace quiz_project.Database
                 en.HasMany(qu => qu.Answers)
                 .WithOne(a => a.Question)
                 .HasForeignKey(a => a.QuestionId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
             });
 
             mb.Entity<Answer>(a =>

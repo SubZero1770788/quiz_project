@@ -13,8 +13,7 @@ using quiz_project.ViewModels;
 
 namespace quiz_project.Controllers
 {
-    public class MenuController(IQuizRepository quizRepository, IAccessValidationService accessValidationService, UserManager<User> userManager,
-                                IUserService userService) : Controller
+    public class MenuController(IQuizRepository quizRepository, UserManager<User> userManager, IUserService userService) : Controller
     {
         [HttpGet, ActionName("Browse")]
         public async Task<IActionResult> BrowsePublicQuizzes()

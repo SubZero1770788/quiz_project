@@ -21,12 +21,17 @@ namespace quiz_project.ViewModels.Mappers
                 TotalScore = quizViewModel.Questions.Sum(qvm => qvm.QuestionScore),
                 UserId = userId,
                 IsPublic = quizViewModel.IsPublic,
-                Questions = quizViewModel.Questions.Select(qvm => new Question
+                Questions = quizViewModel.Questions.Select((qvm, index) => new Question
                 {
+                    QuizId = quizViewModel.QuizId,
+                    QuestionId = qvm.QuestionId,
+                    Index = qvm.Index ?? 0,
                     QuestionScore = qvm.QuestionScore,
                     Description = qvm.Description,
                     Answers = qvm.Answers.Select(avm => new Answer
                     {
+                        QuestionId = qvm.QuestionId,
+                        AnswerId = avm.AnswerId,
                         Description = avm.Description,
                         IsCorrect = avm.IsCorrect
                     }).ToList()
@@ -95,16 +100,19 @@ namespace quiz_project.ViewModels.Mappers
         {
             var quizViewModel = new QuizViewModel
             {
+                IsPublic = quiz.IsPublic,
                 QuizId = quiz!.QuizId,
                 Title = quiz.Title,
                 Description = quiz.Description,
-                Questions = quiz.Questions.Select(qvm => new QuestionViewModel
+                Questions = quiz.Questions.Select((qvm, index) => new QuestionViewModel
                 {
+                    Index = index,
                     QuestionId = qvm.QuestionId != 0 ? qvm.QuestionId : 0,
                     QuestionScore = qvm.QuestionScore,
                     Description = qvm.Description,
                     Answers = qvm.Answers.Select(avm => new AnswerViewModel
                     {
+                        AnswerId = avm.AnswerId,
                         Description = avm.Description,
                         IsCorrect = avm.IsCorrect
                     }).ToList()

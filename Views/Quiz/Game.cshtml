@@ -1,31 +1,24 @@
 @model quiz_project.ViewModels.QuizViewModel;
 
-<h1>Welcome to the quiz: @Model.Title</h1>
+<div class="welcome-wrapper">
+    <h1 class="welcome-title">Welcome to the quiz: @Model.Title</h1>
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-6">
-            <h3>Total score: @Model.TotalScore</h3>
-            <h3>Total question count: @Model.QuestionCount</h3>
-            <div class="row">
-                @Model.Description
-            </div>
-        </div>
-        <div class="col-md-6">
-            count of people that solved the quiz:
-            Average score of participants:
-            //
-            There'll be leaderboard
+    <div class="welcome-info">
+        <h3>Total score: @Model.TotalScore</h3>
+        <h3>Total question count: @Model.QuestionCount</h3>
+        <div class="description-box">
+            @Model.Description
         </div>
     </div>
 
-    <div class="row justify-content-between">
-        <form asp-controller="QuizGame" asp-action="Index" method="get" class="col">
+    <div class="button-group">
+        <form asp-controller="QuizGame" asp-action="Index" method="get">
             <input type="hidden" name="QuizId" value="@Model?.QuizId" />
-            <button type="submit" class="btn btn-success text-white" style="margin: 2px">Continue</button>
+            <button type="submit" class="btn btn-success text-white">Continue</button>
         </form>
-        <form asp-controller="Quiz" asp-action="Index" method="get" class="col">
-            <button type="submit" class="btn btn-danger text-white" style="margin: 2px">Return</button>
+
+        <form asp-controller="Quiz" asp-action="Index" method="get">
+            <button type="submit" class="btn btn-danger text-white">Return</button>
         </form>
     </div>
 </div>

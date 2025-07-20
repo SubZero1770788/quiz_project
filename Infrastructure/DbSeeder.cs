@@ -75,6 +75,29 @@ namespace quiz_project.Infrastructure
                     await userManager.CreateAsync(user, "123123ASD!@#a");
                     await userManager.AddToRoleAsync(user, "User");
                 }
+
+                var mod = new User
+                {
+                    UserName = "moderator",
+                    Email = "moderrratormail@o2.org",
+                    IsLoggedIn = false,
+                };
+
+                await userManager.CreateAsync(mod, "123123ASD!@#a");
+                await userManager.AddToRoleAsync(mod, "Moderator");
+
+                await context.SaveChangesAsync();
+
+                var admin = new User
+                {
+                    UserName = "admin",
+                    Email = "adminmail@o2.org",
+                    IsLoggedIn = false,
+                };
+
+                await userManager.CreateAsync(admin, "123123ASD!@#a");
+                await userManager.AddToRoleAsync(admin, "Admin");
+
                 await context.SaveChangesAsync();
 
 

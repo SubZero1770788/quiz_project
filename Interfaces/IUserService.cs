@@ -16,5 +16,7 @@ namespace quiz_project.Interfaces
         public Task<(bool, string error)> RegisterAsync(RegisterViewModel registerViewModel);
         public Task<bool> LogoutAsync(ClaimsPrincipal principal);
         public Task<List<ActiveUserViewModel>> GetAllActiveUsersAsync();
+        public Task<(bool, string error)> ChangePasswordAsync(string username, PasswordChangeViewModel passwordChangeViewModel);
+        public Task<(bool, string error)> ChangeEmailAsync(string username, EmailChangeViewModel emailChangeViewModel);
     }
 }

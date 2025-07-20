@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using quiz_project.Database;
 using quiz_project.Database.Repositories;
@@ -21,7 +23,13 @@ namespace quiz_project.Infrastructure
         public static WebApplicationBuilder Configure(WebApplicationBuilder builder)
         {
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(opt =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                 .RequireAuthenticatedUser()
+                 .Build();
+                opt.Filters.Add(new AuthorizeFilter(policy));
+            });
             builder.Services.AddSignalR();
 
             // Database connection

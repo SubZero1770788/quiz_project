@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using quiz_project.Database;
+using quiz_project.Entities.Definition;
 using quiz_project.Interfaces;
+using quiz_project.ViewModels;
 
 namespace quiz_project.Entities.Repositories
 {
@@ -45,35 +47,6 @@ namespace quiz_project.Entities.Repositories
             return quiz;
         }
 
-        public async Task UpdateQuizAsync(Quiz quiz)
-        {
-            var oldQuiz = await context.Quizzes
-                .Include(q => q.Questions)
-                .ThenInclude(q => q.Answers)
-                .FirstAsync(q => q.QuizId == quiz.QuizId);
-
-            context.Entry(oldQuiz).CurrentValues.SetValues(quiz);
-            context.Answers.RemoveRange(oldQuiz.Questions.SelectMany(q => q.Answers));
-            context.Questions.RemoveRange(oldQuiz.Questions);
-            await context.SaveChangesAsync();
-
-            foreach (var question in quiz.Questions)
-            {
-                question.QuestionId = 0;
-                question.QuizId = quiz.QuizId;
-                question.Quiz = null;
-
-                foreach (var answer in question.Answers)
-                {
-                    answer.AnswerId = 0;
-                    answer.QuestionId = 0;
-                    answer.Question = null;
-                }
-            }
-            context.Questions.AddRange(quiz.Questions);
-            await context.SaveChangesAsync();
-        }
-
         public async Task<List<Question>> GetQuestionsByQuizId(int quizId)
         {
             var questions = await context.Questions.Where(q => q.QuizId == quizId).Include(q => q.Answers).ToListAsync();
@@ -92,5 +65,136 @@ namespace quiz_project.Entities.Repositories
 
             return answerCounts;
         }
+
+        public async Task UpdateQuizAsync(Quiz quiz)
+        {
+            var oldQuiz = await context.Quizzes
+                .Include(q => q.Questions)
+                    .ThenInclude(q => q.Answers)
+                .FirstAsync(q => q.QuizId == quiz.QuizId);
+
+            var originalUserId = oldQuiz.UserId;
+            context.Entry(oldQuiz).CurrentValues.SetValues(quiz);
+            oldQuiz.UserId = originalUserId;
+
+            // Handle updates and additions
+            foreach (var incomingQuestion in quiz.Questions.Where(q => !q.IsDeleted))
+            {
+                var existingQuestion = oldQuiz.Questions.FirstOrDefault(q => q.QuestionId == incomingQuestion.QuestionId);
+
+                if (existingQuestion != null)
+                {
+                    context.Entry(existingQuestion).CurrentValues.SetValues(incomingQuestion);
+
+                    foreach (var incomingAnswer in incomingQuestion.Answers)
+                    {
+                        var existingAnswer = existingQuestion.Answers
+                            .FirstOrDefault(a => a.AnswerId == incomingAnswer.AnswerId);
+
+                        if (incomingAnswer.AnswerId == 0)
+                        {
+                            incomingAnswer.QuestionId = existingQuestion.QuestionId;
+                            context.Answers.Add(incomingAnswer);
+                        }
+                        else if (existingAnswer != null)
+                        {
+                            context.Entry(existingAnswer).CurrentValues.SetValues(incomingAnswer);
+                        }
+                        else
+                        {
+                            // fallback for untracked update
+                            incomingAnswer.Question = null;
+                            if (incomingAnswer.QuestionId == 0)
+                                incomingAnswer.QuestionId = existingQuestion.QuestionId;
+
+                            context.Attach(incomingAnswer);
+                            context.Entry(incomingAnswer).State = EntityState.Modified;
+                        }
+                    }
+
+                    var answersToRemove = existingQuestion.Answers
+                        .Where(a => !incomingQuestion.Answers.Any(ia => ia.AnswerId == a.AnswerId))
+                        .ToList();
+
+                    if (answersToRemove.Any())
+                    {
+                        var toRemoveIds = answersToRemove.Select(a => a.AnswerId).ToHashSet();
+
+                        var selections = await context.AnswerSelections
+                            .Where(x => toRemoveIds.Contains(x.AnswerId))
+                            .ToListAsync();
+
+                        var allStates = await context.AnswerStates
+                            .Where(x => x.QuestionId == existingQuestion.QuestionId)
+                            .ToListAsync();
+
+                        var statesToRemove = allStates
+                            .Where(x => x.AnswersId.Any(id => toRemoveIds.Contains(id)))
+                            .ToList();
+
+                        context.AnswerSelections.RemoveRange(selections);
+                        context.AnswerStates.RemoveRange(statesToRemove);
+                        context.Answers.RemoveRange(answersToRemove);
+                    }
+                }
+                else
+                {
+                    // New question (added via frontend)
+                    incomingQuestion.QuizId = quiz.QuizId;
+                    foreach (var a in incomingQuestion.Answers)
+                    {
+                        a.AnswerId = 0;
+                        a.QuestionId = 0;
+                    }
+
+                    context.Questions.Add(incomingQuestion);
+                }
+            }
+
+            // Handle deleted questions
+            var deletedQuestions = quiz.Questions
+                .Where(q => q.IsDeleted && q.QuestionId != 0)
+                .Select(q => q.QuestionId)
+                .ToHashSet();
+
+            var questionsToRemove = oldQuiz.Questions
+                .Where(q => deletedQuestions.Contains(q.QuestionId))
+                .ToList();
+
+            foreach (var question in questionsToRemove)
+            {
+                var answerIds = question.Answers.Select(a => a.AnswerId).ToList();
+
+                var selections = await context.AnswerSelections
+                    .Where(x => answerIds.Contains(x.AnswerId)).ToListAsync();
+
+                var states = await context.AnswerStates
+                    .Where(x => x.QuestionId == question.QuestionId && x.AnswersId.Any(id => answerIds.Contains(id)))
+                    .ToListAsync();
+
+                context.AnswerSelections.RemoveRange(selections);
+                context.AnswerStates.RemoveRange(states);
+                context.Answers.RemoveRange(question.Answers);
+            }
+
+            context.Questions.RemoveRange(questionsToRemove);
+
+            // Debug print of all tracked changes
+            foreach (var entry in context.ChangeTracker.Entries())
+            {
+                if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+                {
+                    Console.WriteLine($"{entry.Entity.GetType().Name} | State: {entry.State}");
+
+                    if (entry.Entity is Answer a)
+                        Console.WriteLine($"  AnswerId: {a.AnswerId}, QuestionId: {a.QuestionId}");
+                    else if (entry.Entity is Question q)
+                        Console.WriteLine($"  QuestionId: {q.QuestionId}, QuizId: {q.QuizId}");
+                }
+            }
+
+            await context.SaveChangesAsync();
+        }
+
     }
 }

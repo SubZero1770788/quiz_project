@@ -58,12 +58,15 @@ namespace quiz_project.Controllers
         {
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
-            var owns = await accessValidationService.UserOwnsQuizAsync(Id, user);
-            if (!owns) return RedirectToAction("Index")!;
+
+            if (!await quizQueryService.CheckIfPublicAsync(Id) && !User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsQuizAsync(Id, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
 
             var (success, quizStatisticsModel) = await quizQueryService.GetQuizStatisticsAsync(Id, user.Id);
             if (!success) return View("ZeroAttempts");
-
 
             return View(quizStatisticsModel);
         }
@@ -85,13 +88,11 @@ namespace quiz_project.Controllers
                 var user = await userManager.GetUserAsync(User);
                 if (user is null) return RedirectToAction("Register", "User")!;
 
-                try
+                var (success, error) = await quizService.CreateAsync(quizViewModel, user.Id);
+                if (!success)
                 {
-                    await quizService.CreateAsync(quizViewModel, user.Id);
-                }
-                catch (Exception e)
-                {
-                    ModelState.AddModelError(String.Empty, $"Something went wrong: {e}");
+                    ModelState.AddModelError(String.Empty, error);
+                    return View(quizViewModel);
                 }
 
                 return RedirectToAction("Index");
@@ -104,8 +105,11 @@ namespace quiz_project.Controllers
         {
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
-            var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
-            if (!owns) return RedirectToAction("Index")!;
+            if (!await quizQueryService.CheckIfPublicAsync(quizId) && !User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
 
             var quizViewModel = await quizService.GetEditAsync(quizId);
 
@@ -119,8 +123,11 @@ namespace quiz_project.Controllers
             {
                 var user = await userManager.GetUserAsync(User);
                 if (user is null) return RedirectToAction("Register", "User")!;
-                var owns = await accessValidationService.UserOwnsQuizAsync(quizViewModel.QuizId, user);
-                if (!owns) return RedirectToAction("Index")!;
+                if (!await quizQueryService.CheckIfPublicAsync(quizViewModel.QuizId) && !User.IsInRole("Admin"))
+                {
+                    var owns = await accessValidationService.UserOwnsQuizAsync(quizViewModel.QuizId, user);
+                    if (!owns) return RedirectToAction("Index")!;
+                }
 
                 var (success, errors) = await quizService.PostEditAsync(quizViewModel, user.Id);
 
@@ -144,8 +151,11 @@ namespace quiz_project.Controllers
         {
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
-            var owns = await accessValidationService.UserOwnsQuizAsync(Id, user);
-            if (!owns) return RedirectToAction("Index")!;
+            if (!await quizQueryService.CheckIfPublicAsync(Id) && !User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsQuizAsync(Id, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
 
             try
             {
@@ -164,8 +174,11 @@ namespace quiz_project.Controllers
         {
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
-            var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
-            if (!owns) return RedirectToAction("Index")!;
+            if (!await quizQueryService.CheckIfPublicAsync(quizId) && !User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
 
             var quizViewModel = await quizGameService.LaunchQuizAsync(quizId);
 

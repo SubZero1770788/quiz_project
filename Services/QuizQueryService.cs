@@ -14,6 +14,13 @@ namespace quiz_project.Services
     public class QuizQueryService(IQuizRepository quizRepository, IQuizMapper quizMapper,
                                 IAttemptRepository attemptRepository, UserManager<User> userManager) : IQuizQueryService
     {
+        public async Task<bool> CheckIfPublicAsync(int Id)
+        {
+            var quiz = await quizRepository.GetQuizByIdAsync(Id);
+            if (quiz.IsPublic) return true;
+            return false;
+        }
+
         public async Task<(bool, QuizStatisticsModel?)> GetQuizStatisticsAsync(int quizId, int userId)
         {
             var allQuizAttempts = await attemptRepository.GetAllAttemptsAsync(quizId);

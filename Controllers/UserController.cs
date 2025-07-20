@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -34,20 +36,20 @@ namespace quiz_project.Controllers
             return View();
         }
 
-        [HttpGet]
+        [HttpGet, ActionName("Settings")]
         public async Task<ViewResult> AccountSettings()
         {
             return View();
         }
 
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         public ViewResult Register()
         {
             return View();
         }
 
         // This is a redirect after POST in order to combat the page refresh issue when submitting data in MVC
-        [HttpPost]
+        [HttpPost, AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel registerViewModel)
         {
             if (ModelState.IsValid)
@@ -59,14 +61,14 @@ namespace quiz_project.Controllers
             return View(registerViewModel);
         }
 
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         public ViewResult Login()
         {
             return View();
         }
 
         // This is a redirect after POST in order to combat the page refresh issue when submitting data in MVC
-        [HttpPost]
+        [HttpPost, AllowAnonymous]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
         {
             if (ModelState.IsValid)
@@ -88,6 +90,32 @@ namespace quiz_project.Controllers
         {
             await userService.LogoutAsync(User);
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(PasswordChangeViewModel passwordChangeViewModel)
+        {
+            var (success, error) = await userService.ChangePasswordAsync(User.Identity.Name, passwordChangeViewModel);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                return View("Settings");
+            }
+            TempData["SuccessMessage"] = "Password changed successfully.";
+            return View("Settings");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeEmail(EmailChangeViewModel emailChangeViewModel)
+        {
+            var (success, error) = await userService.ChangeEmailAsync(User.Identity.Name, emailChangeViewModel);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, error);
+                return View("Settings");
+            }
+            TempData["SuccessMessage"] = "Email changed successfully.";
+            return View("Settings");
         }
     }
 }

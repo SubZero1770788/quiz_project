@@ -22,15 +22,18 @@ namespace quiz_project.Controllers
 {
     public class QuizGameController(IAccessValidationService accessValidationService, IPaginationService<Question> paginationService,
                                         IQuizRepository quizRepository, IAttemptRepository attemptRepository, UserManager<User> userManager,
-                                        IQuizGameService quizGameService, IOnGoingQuizRepository onGoingQuizRepository) : Controller
+                                        IQuizGameService quizGameService, IOnGoingQuizRepository onGoingQuizRepository, IQuizQueryService quizQueryService) : Controller
     {
         [HttpGet]
         public async Task<IActionResult> Index(int QuizId)
         {
             var user = await userManager.GetUserAsync(User);
             if (user is null) return RedirectToAction("Register", "User")!;
-            var owns = await accessValidationService.UserOwnsQuizAsync(QuizId, user);
-            if (!owns) return RedirectToAction("Index")!;
+            if (!await quizQueryService.CheckIfPublicAsync(QuizId) && !User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsQuizAsync(QuizId, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
 
             // needs a service
             var state = new OnGoingQuizState
@@ -58,8 +61,11 @@ namespace quiz_project.Controllers
             var quizMetaData = await onGoingQuizRepository.GetAsync(user.Id, quizId);
             // Either you're during a quiz or you shouldn't be there...
 
-            var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
-            if (!owns) return RedirectToAction("Index")!;
+            if (!await quizQueryService.CheckIfPublicAsync(quizId) && !User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsQuizAsync(quizId, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
 
             List<Question> questions = await quizRepository.GetQuestionsByQuizId(quizId);
 
@@ -68,7 +74,7 @@ namespace quiz_project.Controllers
             if (!paginatedQuestiuons.Any())
             {
                 // Return something if Quiz is empty...
-                return Content("It seems that the quiz didn't have any questions...");
+                return View("Empty");
             }
 
             // TotalPages should find it's way into QuizMetaData
@@ -105,8 +111,11 @@ namespace quiz_project.Controllers
             // Either you're during a quiz or you shouldn't be there...
             var quizMetaData = await onGoingQuizRepository.GetAsync(user.Id, model.QuizId);
 
-            var owns = await accessValidationService.UserOwnsQuizAsync(model.QuizId, user);
-            if (!owns) return RedirectToAction("Index")!;
+            if (!await quizQueryService.CheckIfPublicAsync(model.QuizId) && !User.IsInRole("Admin"))
+            {
+                var owns = await accessValidationService.UserOwnsQuizAsync(model.QuizId, user);
+                if (!owns) return RedirectToAction("Index")!;
+            }
 
             List<AnswerState> currentUserAnswers = model.Questions
                 .Select(q => new AnswerState

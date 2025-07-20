@@ -98,5 +98,51 @@ namespace quiz_project.Services
             return (false, "An error has occured");
 
         }
+
+        public async Task<(bool, string error)> ChangeEmailAsync(string username, EmailChangeViewModel emailChangeViewModel)
+        {
+            var user = await userManager.FindByNameAsync(username);
+            if (user == null)
+                return (false, "User not found.");
+
+            // Check current password
+            var passwordValid = await userManager.CheckPasswordAsync(user, emailChangeViewModel.Password);
+            if (!passwordValid)
+                return (false, "Invalid password.");
+
+            // Generate and confirm email change
+            var token = await userManager.GenerateChangeEmailTokenAsync(user, emailChangeViewModel.newEmail);
+            var result = await userManager.ChangeEmailAsync(user, emailChangeViewModel.newEmail, token);
+
+            if (!result.Succeeded)
+                return (false, string.Join("; ", result.Errors.Select(e => e.Description)));
+
+            // Also update UserName if tied to email
+            user.UserName = emailChangeViewModel.newEmail;
+            var updateResult = await userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+                return (false, string.Join("; ", updateResult.Errors.Select(e => e.Description)));
+
+            return (true, string.Empty);
+        }
+
+        public async Task<(bool, string error)> ChangePasswordAsync(string username, PasswordChangeViewModel passwordChangeViewModel)
+        {
+            var user = await userManager.FindByNameAsync(username);
+            if (user == null)
+                return (false, "User not found.");
+
+            var result = await userManager.ChangePasswordAsync(user, passwordChangeViewModel.oldPassword, passwordChangeViewModel.newPassword);
+
+            if (!result.Succeeded)
+                return (false, string.Join("; ", result.Errors.Select(e => e.Description)));
+            var updateResult = await userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+                return (false, string.Join("; ", updateResult.Errors.Select(e => e.Description)));
+
+            return (true, string.Empty);
+        }
     }
 }
