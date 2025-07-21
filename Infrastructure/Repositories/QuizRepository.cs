@@ -160,7 +160,7 @@ namespace quiz_project.Entities.Repositories
 
             // Handle deleted questions
             var incomingQuestionIds = quiz.Questions
-                .Where(q => q.QuestionId != 0)
+                .Where(q => q.Description.Length > 0)
                 .Select(q => q.QuestionId)
                 .ToHashSet();
 
