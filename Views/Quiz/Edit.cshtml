@@ -75,10 +75,13 @@
                     {
                         var question = Model.Questions[i];
                         var qIndex = question.Index ?? i;
+
                         <input type="hidden" name="Questions[@i].QuestionId" value="@Model.Questions[i].QuestionId" />
                         <input type="hidden" name="Questions[@qIndex].Index" value="@qIndex" />
-                        <div class="border p-3 mb-3 bg-light" id="question-@i">
-                            <button class="btn btn-danger mb-2" onclick="removeQuestion(@i)">Remove</button>
+                        <div type="hidden" class="border p-3 mb-3 bg-light question-box" id="question-@qIndex"
+                            data-question-index="@qIndex">
+                            <button type="button" class="btn btn-danger mb-2"
+                                onclick="removeQuestion(@qIndex)">Remove</button>
                             <h5>Question @(i + 1)</h5>
 
                             <div class="form-group">

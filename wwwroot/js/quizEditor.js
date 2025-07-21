@@ -71,20 +71,56 @@ function addAnswers(input, qCount) {
 
 function removeQuestion(questionIndex) {
   const container = document.getElementById("questions-container");
+
+  // Find and remove the question block
   const q = container.querySelector(`[data-question-index="${questionIndex}"]`);
   if (!q) return;
-
-  // Remove the question block from DOM
   q.remove();
 
-  // Re-number remaining questions
+  // Remove all inputs/selects/etc. referencing Questions[questionIndex]
+  const inputsToRemove = container.querySelectorAll(
+    `input[name^="Questions[${questionIndex}]"], 
+     select[name^="Questions[${questionIndex}]"],
+     textarea[name^="Questions[${questionIndex}]"]`
+  );
+  inputsToRemove.forEach((el) => el.remove());
+
+  // Also remove hidden inputs with matching binding prefix
+  const allInputs = container.querySelectorAll("input[type='hidden']");
+  allInputs.forEach((input) => {
+    const name = input.getAttribute("name");
+    if (name && name.startsWith(`Questions[${questionIndex}].`)) {
+      input.remove();
+    }
+  });
+
+  // Decrement indexes of all inputs/selects with index > removed index
+  const inputsToUpdate = container.querySelectorAll("[name]");
+  inputsToUpdate.forEach((input) => {
+    const name = input.getAttribute("name");
+    const match = name.match(/^Questions\[(\d+)\]\.(.+)$/);
+    if (match) {
+      const currentIndex = parseInt(match[1]);
+      const field = match[2];
+      if (currentIndex > questionIndex) {
+        const newIndex = currentIndex - 1;
+        input.setAttribute("name", `Questions[${newIndex}].${field}`);
+      }
+    }
+  });
+
+  // Update data-question-index and IDs on remaining blocks
   const allQuestions = container.querySelectorAll("[data-question-index]");
   allQuestions.forEach((el, i) => {
-    // Update visible title
+    const oldIndex = parseInt(el.getAttribute("data-question-index"));
+    if (oldIndex > questionIndex) {
+      const newIndex = oldIndex - 1;
+      el.setAttribute("data-question-index", newIndex);
+      el.id = `question-${newIndex}`;
+    }
+
+    // Update visible display number
     const title = el.querySelector("h5");
     if (title) title.textContent = `Question ${i + 1}`;
-
-    // Optionally update input names too if you're binding on order (less safe)
-    // But if you're binding using an Index or QuestionId, this is not needed.
   });
 }
